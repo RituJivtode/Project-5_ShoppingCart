@@ -4,6 +4,12 @@ const validation = require("../middleware/validation")
 const bcrypt = require("bcrypt")
 const validator = require('../middleware/validation');
 
+//-----------------------------------------------------------------------------
+
+let StreeRegex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
+let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
+//---------------------------------------------------
+
 let uploadFile= async ( file) =>{
     return new Promise( function(resolve, reject) {
      // this function will upload file to aws and return the link
@@ -53,7 +59,7 @@ const createUser = async function(req, res) {
         const { fname, lname, email, phone, password, address } = body
         body.profileImage = profilePicUrl
 
-        
+
         if (Object.keys(body).length === 0) {
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
@@ -99,14 +105,41 @@ const createUser = async function(req, res) {
         }
 
         //password Number is Mandatory...
-        if (!body.password) {
+        if (!password) {
             return res.status(400).send({ Status: false, message: " password is required" })
         }
         // password Number is Valid...
         let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
-        if (!Passwordregex.test(body.password)) {
+        if (!Passwordregex.test(password)) {
             return res.status(401).send({ Status: false, message: " Please enter a valid password, minlength 8, maxxlength 15" })
         }
+        //----------------------------------------------address--------------------------------
+ 
+        if (address) {
+            if (!StreeRegex.test(address.shipping.street)) {
+                return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
+            }
+            if (!validator.isValid(address.shipping.city)) {
+                return res.status(400).send({ Status: false, message: " Please enter a valid city name" })
+            }
+            if (!PinCodeRegex.test(address.shipping.pincode)) {
+                return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
+            }
+        }
+        
+        if (address) {
+            if (!StreeRegex.test(address.billing.street)) {
+                return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
+            }
+            if (!validator.isValid(address.billing.city)) {
+                return res.status(400).send({ Status: false, message: " Please enter a valid city name" })
+            }
+            if (!PinCodeRegex.test(address.billing.pincode)) {
+                return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
+            }
+        }
+        
+        
 
         let userCreated = await userModel.create(body)
         res.status(201).send({ status: true, msg: "user created successfully", data: userCreated })
