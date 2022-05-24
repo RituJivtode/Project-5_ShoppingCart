@@ -11,8 +11,8 @@ const userSchema = new mongoose.Schema({
         shipping: {
             street: { type: String, required: true, trim: true },
             city: { type: String, required: true, trim: true },
-            pincode: { type: Number, required: true }
-        },
+            pincode: { type: Number, required: true } 
+         },
         billing: {
             street: { type: String, required: true, trim: true },
             city: { type: String, required: true, trim: true },

@@ -13,9 +13,8 @@ app.use(bodyParser.json()); //transforms the text-based JSON input into JS-acces
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //a framework that helps to establish a connection b/w node and mongoDB
-mongoose
-    .connect(
-        "mongodb+srv://prasad1137:5IQmYIBLEHIAI7xz@cluster0.jra3o.mongodb.net/group21Database?retryWrites=true&w=majority", {
+mongoose.connect(
+        "mongodb+srv://Nirajkumar:2gkjm25Aa8wh01yS@cluster0.kzih8.mongodb.net/group21Database?authSource=admin&replicaSet=atlas-11shqf-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true", {
             useNewUrlParser: true,
         }
     )
