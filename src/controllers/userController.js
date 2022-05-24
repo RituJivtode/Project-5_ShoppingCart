@@ -2,8 +2,15 @@ const userModel = require("../models/userModel")
 const jwt = require("jsonwebtoken")
 const validation = require("../middleware/validation")
 const bcrypt = require("bcrypt")
+const aws = require("aws-sdk")
+const {AppConfig} = require('aws-sdk'); 
 
-
+aws.config.update({
+    accessKeyId: "AKIAY3L35MCRUJ6WPO6J",
+  secretAccessKey: "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",
+    region: "ap-south-1"
+  }) 
+  
 let uploadFile= async ( file) =>{
     return new Promise( function(resolve, reject) {
      // this function will upload file to aws and return the link
@@ -12,7 +19,7 @@ let uploadFile= async ( file) =>{
      var uploadParams= {
          ACL: "public-read",
          Bucket: "classroom-training-bucket",  //HERE
-         Key: "nrjp/" + file.originalname, //HERE 
+         Key: "abc/" + file.originalname, //HERE 
          Body: file.buffer
      }
  
@@ -36,21 +43,23 @@ const createUser = async function(req, res) {
 
         let body = req.body
         let files = req.files
+        let c = JSON.parse(req.body.address)
 
+        
         
             // generate salt to hash password
            const salt = await bcrypt.genSalt(10);
             // now we set user password to hashed password
-          req.body.password = await bcrypt.hash(eq.body.password, salt);
+          req.body.password = await bcrypt.hash(req.body.password, salt);
 
         if (files && files.length > 0) {
            
             var profilePicUrl = await uploadFile(files[0]);
         
-        } else {
-            res.status(400).send({ msg: "No file found" })
+        } else { 
+            return res.status(400).send({ msg: "No file found" })
         }
-        const { fname, lname, email, phone, password, address } = body
+        const { fname, lname, email, phone, password,address } = body
         body.profileImage = profilePicUrl
 
 
