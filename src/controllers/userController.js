@@ -2,7 +2,7 @@ const userModel = require("../models/userModel")
 const jwt = require("jsonwebtoken")
 const validation = require("../middleware/validation")
 const bcrypt = require("bcrypt")
-
+const validator = require('../middleware/validation');
 
 let uploadFile= async ( file) =>{
     return new Promise( function(resolve, reject) {
@@ -17,14 +17,14 @@ let uploadFile= async ( file) =>{
      }
  
  
-     s3.upload( uploadParams, function (err, data ){
+     s3.upload( uploadParams, function (err,  body ){
          if(err) {
              console.log(err)
              return reject({"error": err})
          }
-         console.log(data)
+         console.log( body)
          console.log("file uploaded succesfully")
-         return resolve(data.Location)
+         return resolve( body.Location)
      })
  
     })
@@ -53,6 +53,60 @@ const createUser = async function(req, res) {
         const { fname, lname, email, phone, password, address } = body
         body.profileImage = profilePicUrl
 
+        
+        if (Object.keys(body).length === 0) {
+            return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
+        }
+
+        if(!validator.isValid(fname)){
+            return res.status(400).send({status:false,msg:"fullname is required"})
+        }
+        if(!validator.isValid(lname)){
+            return res.status(400).send({status:false,msg:" Lastname is required"})
+        }
+          // Email is Mandatory...
+          if (!validator.isValid(email)) {
+            return res.status(400).send({ status: false, msg: "Email is required" })
+        };
+
+        // Email is Unique...
+        let duplicateEmail = await userModel.findOne({ email:  body.email })
+        if (duplicateEmail) {
+            return res.status(400).send({ status: false, msg: 'Email already exist' })
+        };
+
+        // For a Valid Email...
+        if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test( body.email))) {
+            return res.status(400).send({ status: false, message: ' Email should be a valid' })
+        };
+
+        // phone Number is Mandatory...
+        if (!validator.isValid(phone)) {
+            return res.status(400).send({ status: false, msg: 'phone number is required' })
+        };
+
+        // phone Number is Unique...
+        let duplicateMobile = await userModel.findOne({ phone:  body.phone })
+        if (duplicateMobile) {
+            return res.status(400).send({ status: false, msg: 'phone number already exist' })
+        };
+
+        // phone Number is Valid...
+        let Phoneregex = /^[6-9]{1}[0-9]{9}$/
+
+        if (!Phoneregex.test(phone)) {
+            return res.status(400).send({ Status: false, message: " Please enter a valid phone number" })
+        }
+
+        //password Number is Mandatory...
+        if (!body.password) {
+            return res.status(400).send({ Status: false, message: " password is required" })
+        }
+        // password Number is Valid...
+        let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
+        if (!Passwordregex.test(body.password)) {
+            return res.status(401).send({ Status: false, message: " Please enter a valid password, minlength 8, maxxlength 15" })
+        }
 
         let userCreated = await userModel.create(body)
         res.status(201).send({ status: true, msg: "user created successfully", data: userCreated })
