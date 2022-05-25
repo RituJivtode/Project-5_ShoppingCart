@@ -4,20 +4,20 @@ const mongoose = require('mongoose')
 const productSchema = new mongoose.Schema({
 
      
-  title: {type:String,required:true, unique:true},
-  description: {type:String,required:true},
-  price: {number,required:true }, //valid number/decimal
+  title: {type:String,required:true, unique:true, trim:true},
+  description: {type:String,required:true, trim:true},
+  price: {type:Number,required:true }, //valid number/decimal
   currencyId: {type:String,required:true, INR},
   currencyFormat: {type:String,required:true }, // Rupee symbol,
-  isFreeShipping: {boolean, default: false},
-  productImage: {type:String,required:true},  // s3 link
-  style: {type:String},
+  isFreeShipping: {type:Boolean, default: false},
+  productImage: {type:String,required:true},  // s3 linkgi
+  style: {type:String, trim:true},
   availableSizes: {type:[String],  
      enum:["S", "XS","M","X", "L","XXL", "XL"]
     },
   installments: {type:Number},
-  deletedAt: {type:Date, default:Date.now}, 
-  isDeleted: {boolean, default: false},
+  deletedAt: {type:Date }, 
+  isDeleted: {type:Boolean, default: false},
 },{timestamps:true});
 
 
