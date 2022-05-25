@@ -249,15 +249,15 @@ const getUser = async function (req, res) {
         const user = await userModel.findOne({ _id: _id })
         //no users found
         if (!user) {
-            return res.status(404).send({ status: true, requestBody: "user not found" });
+            return res.status(404).send({ status: true, message: "user not found" });
         }
         //return user in response
-        return res.status(200).send({ status: true, requestBody: user });
+        return res.status(200).send({ status: true, data: user });
 
 
     } catch (error) {
         res.status(500).send({ status: false, msg: error.message })
-    }
+    } 
 }
 
 
