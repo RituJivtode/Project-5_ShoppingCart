@@ -1,6 +1,5 @@
 const userModel = require("../models/userModel")
 const jwt = require("jsonwebtoken")
-const validation = require("../middleware/validation")
 const bcrypt = require("bcrypt")
 const aws = require("aws-sdk")
 const { AppConfig } = require('aws-sdk');
@@ -44,11 +43,6 @@ const createUser = async function (req, res) {
 
         let body = req.body
         let files = req.files
-
-        // //generate salt to hash password
-        // const salt = await bcrypt.genSalt(10);
-        // // now we set user password to hashed password
-        // req.body.password = await bcrypt.hash(req.body.password, salt);
 
         if (files && files.length > 0) {
 
@@ -122,6 +116,7 @@ const createUser = async function (req, res) {
         let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
 
         let addressData = req.body.address
+        
         let address = JSON.parse(addressData)
 
         if (address) {
@@ -217,7 +212,7 @@ const login = async function (req, res) {
         }, 'FunctionUp Group21', { expiresIn: '86400s' });    // token expiry for 24hrs
 
         res.setHeader("x-api-key", user_token);
-        return res.status(200).send({ status: true, data: { token: user_token, userId: userId._id } });
+        return res.status(200).send({ status: true, data: { userId:CheckUser._id, token: user_token,}});
 
 
     }
