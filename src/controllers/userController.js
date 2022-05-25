@@ -10,6 +10,7 @@ const isValidObjectId = function (objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
 }
 
+
 aws.config.update({
     accessKeyId: "AKIAY3L35MCRUJ6WPO6J",
     secretAccessKey: "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",
@@ -134,7 +135,6 @@ const createUser = async function (req, res) {
             if (!PinCodeRegex.test(address.shipping.pincode)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
             }
-
             if (!StreetRegex.test(address.billing.street)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
             }
@@ -164,6 +164,7 @@ const createUser = async function (req, res) {
     }
 
 }
+//---------------------------------------------------------------------------
 
 const login = async function(req, res){
     try{
@@ -174,7 +175,7 @@ const login = async function(req, res){
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
 
-        //**------------------- Email validation -------------------** //
+        //****------------------- Email validation -------------------****** //
  
         if (!validator.isValid(body.email)) {
             return res.status(400).send({ status: false, msg: "Email is required" })
@@ -185,14 +186,18 @@ const login = async function(req, res){
             return res.status(400).send({ status: false, message: ' Email should be a valid' })
         };
  
-        //**------------------- password validation -------------------** //
+        
+        //******------------------- password validation -------------------****** //
 
         if (!validator.isValid(body.password)) {
             return res.status(400).send({ Status: false, message: " password is required" })
         }
         
     
-        //**------------------- checking User Detail -------------------** //
+      
+       
+
+        //******------------------- checking User Detail -------------------****** //
     
 
         let CheckUser = await userModel.findOne({ email: body.email });
@@ -207,7 +212,8 @@ const login = async function(req, res){
         }
 
 
-        //**------------------- generating token for user -------------------** //
+   
+        //******------------------- generating token for user -------------------****** //
         let userToken = jwt.sign({
 
             UserId: CheckUser._id,
@@ -216,6 +222,7 @@ const login = async function(req, res){
         }, 'FunctionUp Group21', { expiresIn: '86400s' });    // token expiry for 24hrs
 
 
+        
         return res.status(200).send({ status: true,message:"User login successfull", data: {UserId:CheckUser._id,token:userToken }});
     
 
@@ -252,6 +259,10 @@ const getUser = async function(req, res) {
         res.status(500).send({ status: false, msg: error.message })
     }
 }
+
+
+
+//--------------------------------------------------------------------
 
 const updateUser = async function (req, res) {
     try {

@@ -24,8 +24,9 @@ const authentication = function ( req, res, next) {
             return res.status(400).send({ status: false, message: "Token is invalid"});
         }
           
-        let userLoggedIn = decodedToken.userId; 
+        let userLoggedIn = decodedToken.UserId; 
         req["userId"] = userLoggedIn;
+        console.log(userLoggedIn)
         next();
     }
     catch (error) {
@@ -45,7 +46,7 @@ const authorization = async function(req,res,next){
         if(!user){
             return res.status(404).send({ status: false, message: "No such user" }) 
         }
-        if(id != user._id){
+        if(id != userId){
             return res.status(403).send({status: false , message : "Not authorized..!" });
         }
         next();

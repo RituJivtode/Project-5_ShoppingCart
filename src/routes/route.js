@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router(); //used express to create route handlers
+const middleware = require('../middleware/authe')
 
 const userController = require("../controllers/userController")
 const mid = require("../middleware/authe")

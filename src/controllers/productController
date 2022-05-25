@@ -1,0 +1,6 @@
+const aws = require('aws-sdk')
+const { AppConfig } = require('aws-sdk');
+const validator = require("../middleware/validation")
+const mongoose = require('mongoose')
+const productModel = require('../models/projectModel')
+
