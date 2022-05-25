@@ -191,10 +191,10 @@ const login = async function(req, res){
             return res.status(400).send({ Status: false, message: " password is required" })
         }
         
-        let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
-        if (!Passwordregex.test(body.password)) {
-            return res.status(400).send({ Status: false, message: " Please enter a valid password, minlength 8, maxxlength 15" })
-        }
+        // let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
+        // if (!Passwordregex.test(body.password)) {
+        //     return res.status(400).send({ Status: false, message: " Please enter a valid password, minlength 8, maxxlength 15" })
+        // }
 
         //******------------------- checking User Detail -------------------****** //
     
