@@ -358,12 +358,12 @@ const updateUser = async function (req, res) {
                 if (!address || Object.keys(address).length == 0) return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
                 address = JSON.parse(address)
               
-                if (address?.shipping?.street) {
-                    if (!StreetRegex.test(address.shipping.street))
+                if (!validator.isValid(address.shipping.street)) {
+                    // if (!StreetRegex.test(address.shipping.street))
                         return res.status(400).send({ status: false, message: "Invalid Shipping street" })
                 } 
-                if (address?.shipping?.city) {
-                    if (!validator.isValid(address.shipping.city))
+                if (!validator.isValid(address.shipping.city)) {
+                    
                         return res.status(400).send({ status: false, message: "please enter shipping city" })
                 }
 
@@ -371,12 +371,13 @@ const updateUser = async function (req, res) {
                     if (!PinCodeRegex.test(address.shipping.pincode))
                         return res.status(400).send({ status: false, message: "Invalid Shipping pincode" })
                 }
-                if (address?.billining?.street) {
-                    if (!StreetRegex.test(address.billing.street))
-                        return res.status(400).send({ status: false, message: "Invalid billing street" })
+                if (!validator.isValid(address.billining.street)) {
+                    return  res.status(400).send({ status: false, message: "Invalid billing street" })
+                    // if (!StreetRegex.test(address.billing.street))
+                    //     return res.status(400).send({ status: false, message: "Invalid billing street" })
                 } 
-                if (address?.billing?.city) {
-                    if (!validator.isValid(address.billing.city))
+                if (!validator.isValid(address.billing.city)) {
+    
                         return res.status(400).send({ status: false, message: "please enter billing city" })
                 }
 
