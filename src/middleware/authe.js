@@ -1,6 +1,6 @@
 //====================================================================================
 const jwt = require("jsonwebtoken");
-const bookModel = require("../models/userModel");
+const userModel = require("../models/userModel");
 const mongoose = require("mongoose")
 
 const isValidObjectId = function (objectId) {
