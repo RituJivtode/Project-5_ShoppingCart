@@ -46,7 +46,7 @@ const authorization = async function(req,res,next){
         if(!user){
             return res.status(404).send({ status: false, message: "No such user" }) 
         }
-        if(id != userId){
+        if(id != user._id){
             return res.status(403).send({status: false , message : "Not authorized..!" });
         }
         next();
