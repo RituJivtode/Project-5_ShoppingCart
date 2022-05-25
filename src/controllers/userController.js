@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt")
 const aws = require("aws-sdk")
 const {AppConfig} = require('aws-sdk'); 
 const validator = require("../middleware/validation")
+const mongoose = require('mongoose')
 
 aws.config.update({
     accessKeyId: "AKIAY3L35MCRUJ6WPO6J",
@@ -128,6 +129,9 @@ const createUser = async function(req, res) {
         let StreetRegex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
         let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
 
+        // if(!validator.isValid(address )){
+        //     return res.status(400).send({status:true,msg:"address is required"})
+        // }
         if (address) {
             if (!StreetRegex.test(address.shipping.street)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
@@ -138,7 +142,7 @@ const createUser = async function(req, res) {
             if (!PinCodeRegex.test(address.shipping.pincode)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
             }
-        }
+        } 
         
         if (address) {
             if (!StreetRegex.test(address.billing.street)) {
@@ -181,10 +185,7 @@ const login = async function(req, res){
         if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test( body.email))) {
             return res.status(400).send({ status: false, message: ' Email should be a valid' })
         };
-         
-        let FinalEmail= body.email
-        // let changeEmail= FinalEmail.toLowerCase()  // changing capital word into lowercase
-
+ 
         //******------------------- password validation -------------------****** //
 
         if (!validator.isValid(body.password)) {
@@ -199,21 +200,28 @@ const login = async function(req, res){
         //******------------------- checking User Detail -------------------****** //
     
 
-        let CheckUser = await userModel.findOne({ email: FinalEmail, password: body.password });
+        let CheckUser = await userModel.findOne({ email: body.email });
 
         if (!CheckUser) {
-            return res.status(400).send({ Status: false, message: "username or the password is not correct" });
+            return res.status(400).send({ Status: false, message: "email is not correct" });
         }
+
+        let passwordMatch = await bcrypt.compare(body.password,CheckUser.password)
+        if(!passwordMatch){
+            return res.status(400).send({status:false,msg:"incorect password"})
+        }
+
+
         //******------------------- generating token for user -------------------****** //
-        let user_token = jwt.sign({
+        let userToken = jwt.sign({
 
             UserId: CheckUser._id,
             batch: "Uranium"
 
         }, 'FunctionUp Group21', { expiresIn: '86400s' });    // token expiry for 24hrs
 
-        res.setHeader("x-api-key", user_token);
-        return res.status(200).send({ status: true, data: {token:user_token }});
+        res.setHeader("x-api-key", userToken);
+        return res.status(200).send({ status: true,message:"User login successfull", data: {UserId:CheckUser._id,token:userToken }});
     
 
     }
@@ -222,4 +230,67 @@ const login = async function(req, res){
     }
 }
 
-module.exports = { createUser ,login}
+const getUser = async function(req, res) {
+    try {
+        //reading userid from path
+        const _id = req.params.userId;
+
+        //id format validation
+        if (_id) {
+            if (mongoose.Types.ObjectId.isValid(_id) == false) {
+                return res
+                    .status(400)
+                    .send({ status: false, message: "Invalid userId" });
+            }
+        }
+
+        const user = await userModel.findOne({ _id })
+            //no users found
+        if (!user) {
+            return res.status(404).send({ status: true, data: "user not found" });
+        }
+        //return user in response
+        return res.status(200).send({ status: true, data: user });
+
+
+    } catch (error) {
+        res.status(500).send({ status: false, msg: error.message })
+    }
+}
+
+//------------------------------------------------------------------------------
+
+const updateUser = async function(req, res){
+    try{
+        let requestBody = req.body
+        let user_id= req.params.userId
+        let doc = req.files
+        const { fname, lname, email, phone, password, address } =requestBody
+    
+        if (files && files.length > 0) {
+               
+            var profilePhotoUrl = await uploadFile(files[0]);
+        
+        } else { 
+            return res.status(400).send({ msg: "No file found" })
+        }
+        let userExist = await userModel.findOne({_id:user_id})
+        if(!userExist){
+            return res.status(404).send({status:false, message:"User not found"})
+        }
+        requestBody.profileImage=profilePhotoUrl
+        let update = await userModel.findOneAndUpdate({_id:user_id},{$set:requestBody},{new:true})
+        res.status(200).send({status:true, message: "User profile updated", date:update})
+        
+    
+    } catch (error) {
+        res.status(500).send({ status: false, msg: error.message })
+    }
+    
+    }
+    
+    
+
+module.exports = { createUser ,login,updateUser,getUser}
+
+ 
