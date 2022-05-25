@@ -216,7 +216,7 @@ const login = async function (req, res) {
         //******------------------- generating token for user -------------------****** //
         let userToken = jwt.sign({
 
-            UserId: CheckUser._id,
+            UserId: CheckUser._id, 
             batch: "Uranium"
 
         }, 'FunctionUp Group21', { expiresIn: '86400s' });    // token expiry for 24hrs
