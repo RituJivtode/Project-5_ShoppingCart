@@ -6,6 +6,9 @@ const productModel = require('../models/productModel')
 
 
 
+
+
+// ==============================================================================================================
 const updateProduct = async function(req, res) {
     try {
 
@@ -59,6 +62,11 @@ const updateProduct = async function(req, res) {
                 return res.status(400).send({ status: false, msg: "currencyId is required" })
             }
         }
+        if (currencyFormat) {
+            if (!validator.isValid(currencyFormat)) {
+                return res.status(400).send({ status: false, msg: "currencyFormat is required" })
+            }
+        }
         if (isFreeShipping) {
             if (!validator.isValid(isFreeShipping)) {
                 return res.status(400).send({ status: false, msg: "isFreeShipping is required" })
@@ -109,3 +117,5 @@ const updateProduct = async function(req, res) {
         res.status(500).send({ status: false, msg: error.message })
     }
 }
+
+module.exports = { updateProduct }
