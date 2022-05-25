@@ -6,7 +6,7 @@ const mid = require("../middleware/authe")
 
 router.post("/register", userController.createUser)
 router.post("/login", userController.login)
-
-router.put("/user/:userId/profile",mid.authentication,mid.authorization1 ,userController.updateUser)
+router.get("/user/:userId/profile", mid.authentication,userController.getUser)
+router.put("/user/:userId/profile",mid.authentication,mid.authorization ,userController.updateUser)
 
 module.exports = router;

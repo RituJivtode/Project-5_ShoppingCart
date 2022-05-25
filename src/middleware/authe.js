@@ -9,19 +9,22 @@ const isValidObjectId = function (objectId) {
 
 const authentication = function ( req, res, next) {
     try{
-        let token = (req.headers["x-api-key"]); 
-
+        let token = req.headers['authorization']; 
         if(!token){
-            return res.status(400).send({status:false, message: "Token must be present...!"});
+            return res.status(400).send({status:false, message: "Token is required..!"});
         }
-
-        let decodedToken = jwt.verify(token, "functionup-uranium");
+         let Token = token.split(" ")
+         let tokenValue = Token[1]
+  
+        console.log(token) 
+        let decodedToken = jwt.verify(tokenValue, 'FunctionUp Group21');
+        console.log(decodedToken)
 
         if (!decodedToken){
             return res.status(400).send({ status: false, message: "Token is invalid"});
         }
           
-        let userLoggedIn = decodedToken.userId;
+        let userLoggedIn = decodedToken.userId; 
         req["userId"] = userLoggedIn;
         next();
     }
@@ -31,11 +34,11 @@ const authentication = function ( req, res, next) {
 }
 
 
-const authorization1 = async function(req,res,next){
+const authorization = async function(req,res,next){
     try{
         let userId = req.params.userId;
         let id = req.userId;
-        if(!isValidObjectId(bookId)){
+        if(!isValidObjectId(userId)){
             return res.status(400).send({ status: false, message: "Please enter valid userId" })
          }
          let user = await userModel.findOne({_id:userId});
@@ -54,4 +57,4 @@ const authorization1 = async function(req,res,next){
 
 
 
-module.exports = {authentication,authorization1}
+module.exports = {authentication,authorization}

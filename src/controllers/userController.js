@@ -4,6 +4,11 @@ const bcrypt = require("bcrypt")
 const aws = require("aws-sdk")
 const { AppConfig } = require('aws-sdk');
 const validator = require("../middleware/validation")
+const mongoose = require("mongoose")
+
+const isValidObjectId = function (objectId) {
+    return mongoose.Types.ObjectId.isValid(objectId)
+}
 
 aws.config.update({
     accessKeyId: "AKIAY3L35MCRUJ6WPO6J",
@@ -160,9 +165,8 @@ const createUser = async function (req, res) {
 
 }
 
-
-const login = async function (req, res) {
-    try {
+const login = async function(req, res){
+    try{
 
         let body = req.body
 
@@ -170,54 +174,82 @@ const login = async function (req, res) {
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
 
-        //******------------------- Email validation -------------------****** //
-
+        //**------------------- Email validation -------------------** //
+ 
         if (!validator.isValid(body.email)) {
             return res.status(400).send({ status: false, msg: "Email is required" })
         };
-
+ 
         // For a Valid Email...
-        if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(body.email))) {
+        if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test( body.email))) {
             return res.status(400).send({ status: false, message: ' Email should be a valid' })
         };
-
-        let FinalEmail = body.email
-        // let changeEmail= FinalEmail.toLowerCase()  // changing capital word into lowercase
-
-        //******------------------- password validation -------------------****** //
+ 
+        //**------------------- password validation -------------------** //
 
         if (!validator.isValid(body.password)) {
             return res.status(400).send({ Status: false, message: " password is required" })
         }
+        
+    
+        //**------------------- checking User Detail -------------------** //
+    
 
-        // let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
-        // if (!Passwordregex.test(body.password)) {
-        //     return res.status(400).send({ Status: false, message: " Please enter a valid password, minlength 8, maxxlength 15" })
-        // }
-
-        //******------------------- checking User Detail -------------------****** //
-
-
-        let CheckUser = await userModel.findOne({ email: FinalEmail, password: body.password });
+        let CheckUser = await userModel.findOne({ email: body.email });
 
         if (!CheckUser) {
-            return res.status(400).send({ Status: false, message: "username or the password is not correct" });
+            return res.status(400).send({ Status: false, message: "email is not correct" });
         }
-        //******------------------- generating token for user -------------------****** //
-        let user_token = jwt.sign({
+
+        let passwordMatch = await bcrypt.compare(body.password,CheckUser.password)
+        if(!passwordMatch){
+            return res.status(400).send({status:false,msg:"incorect password"})
+        }
+
+
+        //**------------------- generating token for user -------------------** //
+        let userToken = jwt.sign({
 
             UserId: CheckUser._id,
             batch: "Uranium"
 
         }, 'FunctionUp Group21', { expiresIn: '86400s' });    // token expiry for 24hrs
 
-        res.setHeader("x-api-key", user_token);
-        return res.status(200).send({ status: true, data: { userId:CheckUser._id, token: user_token,}});
 
+        return res.status(200).send({ status: true,message:"User login successfull", data: {UserId:CheckUser._id,token:userToken }});
+    
 
     }
-    catch (err) {
-        res.status(500).send({ status: false, msg: err.message })
+    catch(err){
+        res.status(500).send({status:false,msg: err.message})
+    }
+}
+
+const getUser = async function(req, res) {
+    try {
+        //reading userid from path
+        const _id = req.params.userId;
+
+        //id format validation
+        if (_id) {
+            if (!isValidObjectId(_id)){
+                return res
+                    .status(400)
+                    .send({ status: false, message: "Invalid userId" });
+            }
+        }
+
+        const user = await userModel.findOne({ _id:_id })
+            //no users found
+        if (!user) {
+            return res.status(404).send({ status: true, data: "user not found" });
+        }
+        //return user in response
+        return res.status(200).send({ status: true, data: user });
+
+
+    } catch (error) {
+        res.status(500).send({ status: false, msg: error.message })
     }
 }
 
@@ -227,7 +259,7 @@ const updateUser = async function (req, res) {
         let user_id = req.params.userId
         let files = req.files
         const { fname, lname, email, phone, password, address } = requestBody
-
+        
         if (files && files.length > 0) {
 
             var profilePhotoUrl = await uploadFile(files[0]);
@@ -250,5 +282,7 @@ const updateUser = async function (req, res) {
 
 }
 
-module.exports = { createUser, login, updateUser }
+
+
+module.exports = { createUser, login, updateUser, getUser }
 
