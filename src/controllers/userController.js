@@ -1,9 +1,9 @@
 const userModel = require("../models/userModel")
 const jwt = require("jsonwebtoken")
-const validation = require("../middleware/validation")
+// const validation = require("../middleware/validation")
 const bcrypt = require("bcrypt")
 const aws = require("aws-sdk")
-const {AppConfig} = require('aws-sdk'); 
+// const {AppConfig} = require('aws-sdk'); 
 const validator = require("../middleware/validation")
 
 aws.config.update({
@@ -20,7 +20,7 @@ let uploadFile= async ( file) =>{
      var uploadParams= {
          ACL: "public-read",
          Bucket: "classroom-training-bucket",  //HERE
-         Key: "abc/" + file.originalname, //HERE 
+         Key: "profile/" + file.originalname, //HERE 
          Body: file.buffer
      }
  
@@ -41,17 +41,17 @@ let uploadFile= async ( file) =>{
 
 const createUser = async function(req, res) {
     try {
-
+         
         let body = req.body
+        console.log(body)
         let files = req.files
-        let c = JSON.parse(req.body.address)
-
-        
-        
+        // let userAddress = req.body.address
+        // let addressData= JSON.parse(userAddress)
+        // body.address=addressData
             // generate salt to hash password
-           const salt = await bcrypt.genSalt(10);
-            // now we set user password to hashed password
-          req.body.password = await bcrypt.hash(req.body.password, salt);
+        //    const salt = await bcrypt.genSalt(10);
+        //     // now we set user password to hashed password
+        //   req.body.password = await bcrypt.hash(req.body.password, salt);
 
         if (files && files.length > 0) {
            
@@ -60,7 +60,7 @@ const createUser = async function(req, res) {
         } else { 
             return res.status(400).send({ msg: "No file found" })
         }
-        const { fname, lname, email, phone, password,address } = body
+        const { fname, lname, email, phone, password, address} = body
         body.profileImage = profilePicUrl
 
 
@@ -109,21 +109,28 @@ const createUser = async function(req, res) {
         }
 
         //password Number is Mandatory...
-        if (!password) {
+        if (!validator.isValid(password)) {
             return res.status(400).send({ Status: false, message: " password is required" })
         }
-        // password Number is Valid...
-        let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
+       //password Number is Valid...
+        let Passwordregex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,15}$/ 
         if (!Passwordregex.test(password)) {
             return res.status(401).send({ Status: false, message: " Please enter a valid password, minlength 8, maxxlength 15" })
         }
-        //----------------------------------------------address--------------------------------
- 
-        let StreeRegex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
+
+
+              // generate salt to hash password
+              const salt = await bcrypt.genSalt(10);
+              // now we set user password to hashed password
+            req.body.password = await bcrypt.hash(req.body.password, salt);
+        // //----------------------------------------------address--------------------------------
+   
+        let streetregex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
         let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
         
-        if (address) {
-            if (!StreeRegex.test(address.shipping.street)) {
+        if (validator.isValid(address)) {
+
+            if ( streetregex.test(address.shipping.street)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
             }
             if (!validator.isValid(address.shipping.city)) {
@@ -133,9 +140,11 @@ const createUser = async function(req, res) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
             }
         }
-        
-        if (address) {
-            if (!StreeRegex.test(address.billing.street)) {
+        else{
+            return res.status(400).send({status:false, message:"address is required"})
+        }
+        if (validator.isValid(address)) {
+            if ( streetregex.test(address.billing.street)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
             }
             if (!validator.isValid(address.billing.city)) {
@@ -144,6 +153,9 @@ const createUser = async function(req, res) {
             if (!PinCodeRegex.test(address.billing.pincode)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
             }
+        }
+        else{
+            return res.status(400).send({status:false, message:"address is required"})
         }
         
         
@@ -154,7 +166,39 @@ const createUser = async function(req, res) {
     } catch (error) {
         res.status(500).send({ status: false, msg: error.message })
     }
+   
+}
+
+
+//============================== Update user ========================================================
+
+const updateUser = async function(req, res){
+try{
+    let requestBody = req.body
+    let user_id= req.params.userId
+    let doc = req.files
+    const { fname, lname, email, phone, password, address } =requestBody
+
+    if (files && files.length > 0) {
+           
+        var profilePhotoUrl = await uploadFile(files[0]);
+    
+    } else { 
+        return res.status(400).send({ msg: "No file found" })
+    }
+    let userExist = await userModel.findOne({_id:user_id})
+    if(!userExist){
+        return res.status(404).send({status:false, message:"User not found"})
+    }
+    requestBody.profileImage=profilePhotoUrl
+    let update = await userModel.findOneAndUpdate({_id:user_id},{$set:requestBody},{new:true})
+    res.status(200).send({status:true, message: "User profile updated", date:update})
+    
+
+} catch (error) {
+    res.status(500).send({ status: false, msg: error.message })
+}
 
 }
 
-module.exports = { createUser }
+module.exports = { createUser, updateUser}
