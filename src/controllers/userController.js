@@ -43,7 +43,7 @@ const createUser = async function(req, res) {
     try {
          
         let body = req.body
-        console.log(body)
+        
         let files = req.files
         // let userAddress = req.body.address
         // let addressData= JSON.parse(userAddress)
@@ -60,10 +60,12 @@ const createUser = async function(req, res) {
         } else { 
             return res.status(400).send({ msg: "No file found" })
         }
-        const { fname, lname, email, phone, password, address} = body
-        body.profileImage = profilePicUrl
-
-
+        const { fname, lname, email, phone, password} = body
+        // body.profileImage = profilePicUrl
+           let x = req.body.address
+           console.log(x)
+       const address = JSON.parse(x)
+       console.log(address)
         if (Object.keys(body).length === 0) {
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
@@ -126,11 +128,11 @@ const createUser = async function(req, res) {
         // //----------------------------------------------address--------------------------------
    
         let streetregex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
-        let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
+        let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/ 
         
-        if (validator.isValid(address)) {
+        if (address) {
 
-            if ( streetregex.test(address.shipping.street)) {
+            if ( !validator.isValid(address.shipping.street)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
             }
             if (!validator.isValid(address.shipping.city)) {
@@ -139,12 +141,9 @@ const createUser = async function(req, res) {
             if (!PinCodeRegex.test(address.shipping.pincode)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
             }
-        }
-        else{
-            return res.status(400).send({status:false, message:"address is required"})
-        }
-        if (validator.isValid(address)) {
-            if ( streetregex.test(address.billing.street)) {
+        
+    
+            if ( !validator.isValid(address.billing.street)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
             }
             if (!validator.isValid(address.billing.city)) {
@@ -159,8 +158,9 @@ const createUser = async function(req, res) {
         }
         
         
-
-        let userCreated = await userModel.create(body)
+       filterBody= {fname:fname, lname:lname, email:email, phone:phone, password:password, address:address}
+       filterBody.profileImage= profilePicUrl
+        let userCreated = await userModel.create(filterBody)
         res.status(201).send({ status: true, msg: "user created successfully", data: userCreated })
 
     } catch (error) {
