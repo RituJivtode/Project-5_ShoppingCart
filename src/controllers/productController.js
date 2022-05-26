@@ -102,6 +102,7 @@ const createProduct = async function (req, res) {
                     return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
                 }
             } 
+
         }
 
         if (!validator.validInstallment(installments)) {
@@ -157,9 +158,36 @@ const getProduct = async function (req, res) {
 const productByQuery = async function (req, res) {
     try {
         // from Query to QuryParams
-        const queryParams = req.query
-
+      const{size, name, price} = req.query
+      console.log(req.query)
     // Existence of product=====
+    queryParams={};
+    if("size" in req.query){
+
+        let array = size.split(",").map(x => x.trim())
+
+        for (let i = 0; i < array.length; i++) {
+            if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
+                return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
+            }
+        }  
+        
+        queryParams["availableSizes"]= size
+    }
+    if("name" in req.query){
+
+        if(!validator.isValid(name)){
+            return res.status(400).send({status:false,message:"name is required"})
+        }
+      queryParams["title"] = name
+    }
+    if("price" in req.query){
+        if (price <= 0) {
+            return res.status(400).send({ status: false, message: `Price should be a valid number` })
+        }
+        queryParams["price"]= price
+    }
+
         let productExist = await productModel.find({queryParams, isDeleted: false })
         if (productExist.length == 0) {
             return res.status(404).send({ status: false, message: "there is no product" })
