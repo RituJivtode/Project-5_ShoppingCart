@@ -283,4 +283,32 @@ const updateProduct = async function (req, res) {
     }
 }
 
-module.exports = { updateProduct, getProduct, productByQuery, createProduct }
+const deleteProduct = async function (req, res) {
+    try {
+        let id = req.params.productId
+
+         //id format validation
+         if (!isValidObjectId(id)) {
+            return res.status(400).send({ status: false, message: "Invalid productId" });
+        }
+
+        //check if the document is found with that Product id and check if it already deleted or not
+        let verification = await productModel.findById(id)
+        if (!verification) {
+            return res.status(404).send({ Status: false, msg: "Document Not Found" })
+        }
+        if (verification.isDeleted === true) {
+            return res.status(400).send({ Status: false, msg: "Document already deleted" })
+        }
+        //secussfully deleted Product data
+        else {
+            let FinalResult = await productModel.findByIdAndUpdate({ _id: id }, { isDeleted: true, deletedAt: new Date() }, { new: true })
+            return res.status(200).send({ Status: true, message: " Successfully deleted the Product "})
+        }
+    }
+    catch (err) {
+        return res.status(500).send({ Status: false, msg: "Error", error: err.message })
+    }
+}
+
+module.exports = { updateProduct, getProduct, productByQuery, createProduct, deleteProduct }
