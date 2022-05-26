@@ -4,9 +4,14 @@ const validator = require("../middleware/validation")
 const mongoose = require('mongoose')
 const productModel = require('../models/productModel')
 
+const isValidObjectId = function (objectId) {
+    return mongoose.Types.ObjectId.isValid(objectId)
+}
+ 
 
 
 //==============================================-: CREATE PRODUCT:-================================================================
+ 
 
 aws.config.update({
     accessKeyId: "AKIAY3L35MCRUJ6WPO6J",
@@ -114,7 +119,58 @@ const createProduct = async function (req, res) {
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message })
     }
+}
+ 
+//===============================  Get Poduct By Id============================
 
+
+const getProduct = async function (req, res) {
+    try {
+        //userid from path=======
+        const product_id = req.params.productId;
+
+        //id validation====
+        if (product_id) {
+        if (!isValidObjectId(product_id)) {
+    return res.status(400).send({ status: false, message: "Invalid productId" });
+            }
+        }
+
+        const product = await productModel.findOne({ _id: product_id, isDeleted:false })
+        // product not found===
+        if (!product) {
+            return res.status(404).send({ status: false, message: "Product not found" });
+        }
+        //return product in response==
+        return res.status(200).send({ status: true, data: product});
+
+
+    } catch (error) {
+        res.status(500).send({ status: false, msg: error.message })
+    } 
+
+}
+
+//==============================================================================================================
+
+const productByQuery = async function (req, res) {
+    try {
+        // from Query to QuryParams
+        const queryParams = req.query
+
+    // Existence of product=====
+        let productExist = await productModel.find({queryParams, isDeleted: false })
+        if (productExist.length == 0) {
+            return res.status(404).send({ status: false, message: "there is no product" })
+        }
+        // sort by price in product collection.==========
+        const products = await productModel.find({ $and: [queryParams, {isDeleted: false }] }).sort({price:1})
+         res.status(200).send({ status: true, data: products });
+         
+         
+    } catch (error) {
+        res.status(500).send({ status: false, msg: error.message })
+    } 
 
 }
 
@@ -204,8 +260,6 @@ const updateProduct = async function (req, res) {
         }
 
 
-
-
         let files = req.files
         if (files && files.length > 0) {
             var profilePicUrl = await uploadFile(files[0])
@@ -227,6 +281,5 @@ const updateProduct = async function (req, res) {
         res.status(500).send({ status: false, msg: error.message })
     }
 }
-
-module.exports.updateProduct=updateProduct
-module.exports.createProduct=createProduct
+ 
+module.exports= {updateProduct, getProduct, productByQuery,createProduct }

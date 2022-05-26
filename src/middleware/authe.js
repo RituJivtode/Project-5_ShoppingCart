@@ -16,19 +16,19 @@ const authentication = function ( req, res, next) {
          let Token = token.split(" ")
          let tokenValue = Token[1]
   
-        console.log(token) 
-        let decodedToken = jwt.verify(tokenValue, 'FunctionUp Group21');
-        console.log(decodedToken)
+       
+     jwt.verify(tokenValue,'FunctionUp Group21', function(err, decoded) {
+            if (err)
+            return res.status(400).send({ status: false, message: "invalid token "}); 
+            console.log(decoded)
 
-        if (!decodedToken){
-            return res.status(400).send({ status: false, message: "Token is invalid"});
-        }
-          
-        let userLoggedIn = decodedToken.UserId; 
-        req["userId"] = userLoggedIn;
-        console.log(userLoggedIn)
-        next();
-    }
+        let userLoggedIn = decoded.UserId; 
+        req["userId"] = userLoggedIn; 
+     
+        next(); 
+     })
+     
+    } 
     catch (error) {
         return res.status(500).send({ status: false, message: error.message });
     }

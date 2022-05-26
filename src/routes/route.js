@@ -5,14 +5,21 @@ const productController = require("../controllers/productController")
 const mid = require("../middleware/authe")
 
 router.post("/register", userController.createUser)
+
 router.post("/login", userController.login)
+
 router.get("/user/:userId/profile", mid.authentication, userController.getUser)
+
 router.put("/user/:userId/profile", mid.authentication, mid.authorization, userController.updateUser)
 
 //====================================================================================================
+router.get("/products", productController.productByQuery)
+
+router.get("/products/:productId", productController.getProduct)
 
 router.post("/products", productController.createProduct)
 router.put("/products/:productId", productController.updateProduct)
+
 
 
 
