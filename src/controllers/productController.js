@@ -112,8 +112,8 @@ const createProduct = async function (req, res) {
         let filterBody = {title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments}
             filterBody.productImage = productUrl
             console.log(productUrl)
-        let userCreated = await productModel.create(filterBody)
-        res.status(201).send({ status: true, userCreated })
+        let productCreated = await productModel.create(filterBody)
+        res.status(201).send({ status: true, productCreated })
 
 
     }
