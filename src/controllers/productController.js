@@ -114,8 +114,6 @@ const createProduct = async function (req, res) {
             console.log(productUrl)
         let productCreated = await productModel.create(filterBody)
         res.status(201).send({ status: true, productCreated })
-
-
     }
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message })
@@ -130,11 +128,11 @@ const getProduct = async function (req, res) {
         const product_id = req.params.productId;
 
         //id validation====
-        if (product_id) {
+      
         if (!isValidObjectId(product_id)) {
-    return res.status(400).send({ status: false, message: "Invalid productId" });
+    return res.status(400).send({ status: false, message: `This ${product_id} is invalid productId` });
             }
-        }
+        
 
         const product = await productModel.findOne({ _id: product_id, isDeleted:false })
         // product not found===
@@ -183,13 +181,10 @@ const updateProduct = async function (req, res) {
         let product_id = req.params.userId
 
         //id format validation
-        if (product_id) {
-            if (mongoose.Types.ObjectId.isValid(product_id) == false) {
-                return res
-                    .status(400)
-                    .send({ status: false, message: "Invalid productId" });
+            if (!isValidObjectId(product_id)) {
+                return res.status(400).send({ status: false, message: "Invalid productId" });
             }
-        }
+        
         //fetch product using productId
         const product = await productModel.findOne({
             $and: [{ product_id }, { isDeleted: false }],
