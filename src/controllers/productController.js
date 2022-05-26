@@ -26,8 +26,8 @@ let uploadFile = async (file) => {
 
         var uploadParams = {
             ACL: "public-read",
-            Bucket: "functionUp-training-bucket",  //HERE
-            Key: "project5/" + file.originalname, //HERE 
+            Bucket:"classroom-training-bucket",   //HERE
+            Key: "abc/" + file.originalname, //HERE 
             Body: file.buffer
         }
 
@@ -111,7 +111,7 @@ const createProduct = async function (req, res) {
         
         let filterBody = {title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments}
             filterBody.productImage = productUrl
-        let userCreated = await userModel.create(filterBody)
+        let userCreated = await productModel.create(filterBody)
         res.status(201).send({ status: true, msg: "user created successfully", userCreated })
 
 
