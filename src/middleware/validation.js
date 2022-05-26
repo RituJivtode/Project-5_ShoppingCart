@@ -10,4 +10,10 @@ const isValid = function (value) {
     }
 }
 
+const validInstallment = function isInteger(value) {
+    if(value < 0) return false
+     if(value % 1 == 0 ) return true
+}
 module.exports.isValid = isValid;
+module.exports.validInstallment = validInstallment;
+

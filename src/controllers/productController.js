@@ -6,10 +6,120 @@ const productModel = require('../models/productModel')
 
 
 
+//==============================================-: CREATE PRODUCT:-================================================================
 
+aws.config.update({
+    accessKeyId: "AKIAY3L35MCRUJ6WPO6J",
+    secretAccessKey: "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",
+    region: "ap-south-1"
+})
+
+let uploadFile = async (file) => {
+    return new Promise(function (resolve, reject) {
+        // this function will upload file to aws and return the link
+        let s3 = new aws.S3({ apiVersion: '2006-03-01' }); // we will be using the s3 service of aws
+
+        var uploadParams = {
+            ACL: "public-read",
+            Bucket: "functionUp-training-bucket",  //HERE
+            Key: "project5/" + file.originalname, //HERE 
+            Body: file.buffer
+        }
+
+
+        s3.upload(uploadParams, function (err, body) {
+            if (err) {
+                console.log(err)
+                return reject({ "error": err })
+            }
+            console.log(body)
+            console.log("file uploaded succesfully")
+            return resolve(body.Location)
+        })
+
+    })
+}
+
+
+const createProduct = async function (req, res) {
+    try {
+
+        let reqBody = req.body
+
+        if (Object.keys(reqBody).length === 0) {
+            return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
+        }
+
+        const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments } = reqBody
+
+
+        if (!validator.isValid(title)) {
+            return res.status(400).send({ status: false, msg: "title is required" })
+        }
+        let checkTitle = await productModel.findOne({title:title})
+        if (checkTitle) {
+            return res.status(400).send({ status: false, msg: "title already exist" })
+        }
+        if (!validator.isValid(description)) {
+            return res.status(400).send({ status: false, msg: "description is required" })
+        }
+
+        if (!validator.isValid(price)) {
+            return res.status(400).send({ status: false, msg: "price is required" })
+        }
+        if (price <= 0) {
+            return res.status(400).send({ status: false, message: `Price should be a valid number` })
+        }
+        if (!validator.isValid(currencyId)) {
+            return res.status(400).send({ status: false, msg: "currencyId is required" })
+        }
+        if (currencyId !== 'INR') return res.status(400).send({ status: false, msg: "currencyId should be 'INR'" })
+
+        if (!validator.isValid(currencyFormat)) {
+            return res.status(400).send({ status: false, msg: "currencyFormat is required" })
+        }
+ 
+        let files = req.files
+
+        if (files && files.length > 0) {
+
+            var productUrl = await uploadFile(files[0]);
+
+        } else {
+            return res.status(400).send({ msg: "No file found" })
+        }
+
+        if (availableSizes) {
+            let array = availableSizes.split(",").map(x => x.trim())
+
+            for (let i = 0; i < array.length; i++) {
+                if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
+                    return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
+                }
+            } 
+        }
+
+        if (!validator.validInstallment(installments)) {
+            return res.status(400).send({ status: false, msg: "installments can't be a decimal number & must be greater than equalto zero " })
+        }
+
+        
+        let filterBody = {title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments}
+            filterBody.productImage = productUrl
+        let userCreated = await userModel.create(filterBody)
+        res.status(201).send({ status: true, msg: "user created successfully", filterBody })
+
+
+    }
+    catch (err) {
+        return res.status(500).send({ status: false, msg: err.message })
+    }
+
+
+}
 
 // ==============================================================================================================
-const updateProduct = async function(req, res) {
+const updateProduct = async function (req, res) {
     try {
 
         let product_id = req.params.userId
@@ -118,4 +228,5 @@ const updateProduct = async function(req, res) {
     }
 }
 
-module.exports = { updateProduct }
+module.exports.updateProduct=updateProduct
+module.exports.createProduct=createProduct
