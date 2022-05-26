@@ -157,7 +157,7 @@ const createUser = async function (req, res) {
         let filterBody = { fname: fname, lname: lname, email: email, phone: phone, password: passwordValue, address: address }
         filterBody.profileImage = profilePicUrl
         let userCreated = await userModel.create(filterBody)
-        res.status(201).send({ status: true, msg: "user created successfully", requestBody: userCreated })
+        res.status(201).send({ status: true, msg: "user created successfully", data: userCreated })
 
     } catch (error) {
         res.status(500).send({ status: false, msg: error.message })
@@ -223,7 +223,7 @@ const login = async function (req, res) {
 
 
 
-        return res.status(200).send({ status: true, message: "User login successfull", requestBody: { UserId: CheckUser._id, token: userToken } });
+        return res.status(200).send({ status: true, message: "User login successfull", data: { UserId: CheckUser._id, token: userToken } });
 
 
     }
@@ -249,7 +249,7 @@ const getUser = async function (req, res) {
         const user = await userModel.findOne({ _id: _id })
         //no users found
         if (!user) {
-            return res.status(404).send({ status: true, message: "user not found" });
+            return res.status(404).send({ status: false, message: "user not found" });
         }
         //return user in response
         return res.status(200).send({ status: true, data: user });
@@ -306,7 +306,7 @@ const updateUser = async function (req, res) {
         }
         if ("email" in requestBody) {
             if (!validator.isValid(email)) {
-                return res.status(400).send({ status: false, message: "give email request body" })
+                return res.status(400).send({ status: false, message: "give email in request body" })
             }
             if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email))) {
                 return res.status(400).send({ status: false, message: ' Email should be a valid' })
@@ -321,7 +321,7 @@ const updateUser = async function (req, res) {
 
         } if ("phone" in requestBody) {
             if (!validator.isValid(phone)) {
-                return res.status(400).send({ status: false, message: "give phone no. request body" })
+                return res.status(400).send({ status: false, message: "give phone no. in request body" })
             }
             if (!Phoneregex.test(phone)) {
                 return res.status(400).send({ status: false, message: ' phone no. should be a valid' })
