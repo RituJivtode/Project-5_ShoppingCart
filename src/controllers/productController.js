@@ -90,13 +90,13 @@ const createProduct = async function (req, res) {
         let files = req.files
 
         if (files && files.length > 0) {
-//upload filse in aws s3
+            //upload filse in aws s3
             var productUrl = await uploadFile(files[0]);
             console.log(productUrl)
         } else {
             return res.status(400).send({ msg: "No file found" })
         }
-//for valid enum
+        //for valid enum
         if (availableSizes) {
             let array = availableSizes.split(",").map(x => x.trim())
             console.log(array)
@@ -111,7 +111,7 @@ const createProduct = async function (req, res) {
             return res.status(400).send({ status: false, msg: "installments can't be a decimal number & must be greater than equalto zero " })
         }
 
-//save all key data
+        //save all key data
         let filterBody = { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments }
         filterBody.productImage = productUrl
         console.log(productUrl)
@@ -159,10 +159,37 @@ const getProduct = async function (req, res) {
 const productByQuery = async function (req, res) {
     try {
         // from Query to QuryParams
-        const queryParams = req.query
+      const{size, name, price} = req.query
+      console.log(req.query)
+    // Existence of product=====
+    queryParams={};
+    if("size" in req.query){
 
-        // Existence of product=====
-        let productExist = await productModel.find({ queryParams, isDeleted: false })
+        let array = size.split(",").map(x => x.trim())
+
+        for (let i = 0; i < array.length; i++) {
+            if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
+                return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
+            }
+        }  
+        
+        queryParams["availableSizes"]= size
+    }
+    if("name" in req.query){
+
+        if(!validator.isValid(name)){
+            return res.status(400).send({status:false,message:"name is required"})
+        }
+      queryParams["title"] = name
+    }
+    if("price" in req.query){
+        if (price <= 0) {
+            return res.status(400).send({ status: false, message: `Price should be a valid number` })
+        }
+        queryParams["price"]= price
+    }
+
+        let productExist = await productModel.find({queryParams, isDeleted: false })
         if (productExist.length == 0) {
             return res.status(404).send({ status: false, message: "there is no product" })
         }
@@ -182,36 +209,37 @@ const productByQuery = async function (req, res) {
 const updateProduct = async function (req, res) {
     try {
 
-        let product_id = req.params.userId
+        let product_id = req.params.productId
 
         //id format validation
         if (!isValidObjectId(product_id)) {
             return res.status(400).send({ status: false, message: "Invalid productId" });
         }
 
-        //fetch product using productId
-        const product = await productModel.findOne({
-            $and: [{ product_id }, { isDeleted: false }],
-        });
+        // //fetch product using productId
+        const product = await productModel.findOne({ $and: [{ _id:product_id }, { isDeleted: false }], });
         if (!product) {
             return res.status(404).send({ status: true, data: "product not found" });
         }
 
         //reading updates
-        let updates = req.Body
-
+        let updates = req.body
+         let upData = {};
         const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments } = updates
 
-        if (title) {
+        if("title" in updates) {
+            if (!validator.isValid(title)) {
+                return res.status(400).send({ status: false, msg: "title is required" })
+            }
+             upData["title"] = title
+             
             //check uniqueness of product title
-            const uniqueTitle = await productModel.findOne(title);
+            const uniqueTitle = await productModel.findOne({title:title});
 
             if (uniqueTitle) {
                 return res.status(400).send({ status: false, message: `${title} already exist` });
             }
-            if (!validator.isValid(title)) {
-                return res.status(400).send({ status: false, msg: "title is required" })
-            }
+           
         }
 
         if (description) {
@@ -244,7 +272,7 @@ const updateProduct = async function (req, res) {
                 return res.status(400).send({ status: false, msg: "productImage is required" })
             }
         }
-        if (style) {
+        if(style){
             if (!validator.isValid(style)) {
                 return res.status(400).send({ status: false, msg: "style is required" })
             }
@@ -261,19 +289,18 @@ const updateProduct = async function (req, res) {
         }
 
 
+
         let files = req.files
         if (files && files.length > 0) {
-            var profilePicUrl = await uploadFile(files[0])
-        } else {
-            return res.status(400).send({ msg: "No files found" })
-        }
-        let productExist = await productModel.findOne({ _id: product_id })
-        if (!productExist) {
-            return res.status(404).send({ status: false, msg: "Product not found" })
-        }
-        updates.productImage = profilePicUrl
+            var productUrl = await uploadFile(files[0])
+        } 
+        // else {
+        //     return res.status(400).send({ msg: "No files found" })
+        // }
+        
+        updates.productImage = productUrl
 
-        let productUpdated = await userModel.findOneAndUpdate({ _id: product_id }, { $set: updates }, { new: true })
+        let productUpdated = await productModel.findOneAndUpdate({ _id: product_id ,  isDeleted: false } ,{$set:updates}, { new: true })
         res.status(200).send({ status: true, message: "Product updated", date: productUpdated })
 
 
