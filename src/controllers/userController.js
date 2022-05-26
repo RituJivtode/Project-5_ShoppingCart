@@ -231,7 +231,7 @@ const login = async function (req, res) {
         res.status(500).send({ status: false, msg: err.message })
     }
 }
-
+//====================================== Get User =============================================
 const getUser = async function (req, res) {
     try {
         //reading userid from path
