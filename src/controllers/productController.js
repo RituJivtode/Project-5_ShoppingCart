@@ -132,7 +132,7 @@ const getProduct = async function (req, res) {
         //id validation====
       
         if (!isValidObjectId(product_id)) {
-    return res.status(400).send({ status: false, message: "Invalid productId" });
+    return res.status(400).send({ status: false, message: `This ${product_id} is invalid productId` });
             }
         
 
