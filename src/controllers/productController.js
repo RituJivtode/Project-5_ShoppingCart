@@ -112,7 +112,7 @@ const createProduct = async function (req, res) {
         let filterBody = {title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments}
             filterBody.productImage = productUrl
         let userCreated = await userModel.create(filterBody)
-        res.status(201).send({ status: true, msg: "user created successfully", filterBody })
+        res.status(201).send({ status: true, msg: "user created successfully", userCreated })
 
 
     }
@@ -122,7 +122,6 @@ const createProduct = async function (req, res) {
 }
  
 //===============================  Get Poduct By Id============================
-
 
 const getProduct = async function (req, res) {
     try {
@@ -145,13 +144,14 @@ const getProduct = async function (req, res) {
         return res.status(200).send({ status: true, data: product});
 
 
-    } catch (error) {
+    } 
+    catch (error) {
         res.status(500).send({ status: false, msg: error.message })
     } 
 
 }
 
-//==============================================================================================================
+//=============================================================================================================
 
 const productByQuery = async function (req, res) {
     try {
@@ -168,7 +168,8 @@ const productByQuery = async function (req, res) {
          res.status(200).send({ status: true, data: products });
          
          
-    } catch (error) {
+    }
+     catch (error) {
         res.status(500).send({ status: false, msg: error.message })
     } 
 
