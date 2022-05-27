@@ -121,9 +121,10 @@ const createUser = async function (req, res) {
         let StreetRegex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
         let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
 
-        let addressData = req.body.address
-
-        let address = JSON.parse(addressData)
+        let address= req.body.address
+        // console.log(addressData)
+ 
+        // let address = JSON.parse(addressData) 
 
         if (Object.keys(address).length != 0) {
             if (!StreetRegex.test(address.shipping.street)) {
@@ -275,7 +276,7 @@ const updateUser = async function (req, res) {
         let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
         let { fname, lname, email, phone, password, address } = requestBody
         let filterBody = {};
-
+        let value = await userModel.findOne({_id:user_id})
         if (Object.keys(requestBody).length === 0) {
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
@@ -354,32 +355,44 @@ const updateUser = async function (req, res) {
 
         }
         if("address" in requestBody){
+
             
                 if (!address || Object.keys(address).length == 0) return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
                 address = JSON.parse(address)
-              
-                if (!validator.isValid(address.shipping.street)) {
+                if (address?.shipping?.street) {
+                if (!StreetRegex.test(address.shipping.street)) {
                     // if (!StreetRegex.test(address.shipping.street))
                         return res.status(400).send({ status: false, message: "Invalid Shipping street" })
                 } 
+            }
+            if (address?.shipping?.city) {
                 if (!validator.isValid(address.shipping.city)) {
                     
                         return res.status(400).send({ status: false, message: "please enter shipping city" })
                 }
+            }
 
                 if (address?.shipping?.pincode) {
                     if (!PinCodeRegex.test(address.shipping.pincode))
                         return res.status(400).send({ status: false, message: "Invalid Shipping pincode" })
                 }
-                if (!validator.isValid(address.billining.street)) {
+
+
+                if (address?.billing?.street) {
+                if (!StreetRegex.test(address.billining.street)) {
                     return  res.status(400).send({ status: false, message: "Invalid billing street" })
                     // if (!StreetRegex.test(address.billing.street))
                     //     return res.status(400).send({ status: false, message: "Invalid billing street" })
                 } 
+
+            }
+
+            if (address?.billing?.city) {
                 if (!validator.isValid(address.billing.city)) {
     
                         return res.status(400).send({ status: false, message: "please enter billing city" })
                 }
+            }
 
                 if (address?.billing?.pincode) {
                     if (!PinCodeRegex.test(address.billing.pincode))
@@ -391,7 +404,8 @@ const updateUser = async function (req, res) {
 
 
         let update = await userModel.findOneAndUpdate({ _id: user_id }, { $set: filterBody }, { new: true })
-        res.status(200).send({ status: true, message: "User profile updated", date: update })
+       value.address= update.address
+        res.status(200).send({ status: true, message: "User profile updated", date: value })
 
 
     } catch (error) {
