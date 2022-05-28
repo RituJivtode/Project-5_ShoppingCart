@@ -91,8 +91,8 @@ const createProduct = async function(req, res) {
 
         if (files && files.length > 0) {
             //upload filse in aws s3
-            var productUrl = await uploadFile(files[0]);
-            console.log(productUrl)
+            var updateImage = await uploadFile(files[0]);
+            console.log(updateImage)
         } else {
             return res.status(400).send({ msg: "No file found" })
         }
@@ -113,8 +113,8 @@ const createProduct = async function(req, res) {
 
         //save all key data
         let filterBody = { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments }
-        filterBody.productImage = productUrl
-        console.log(productUrl)
+        filterBody.productImage = updateImage
+        console.log(updateImage)
             //successfully created product
         let productCreated = await productModel.create(filterBody)
         res.status(201).send({ status: true, data: productCreated })
@@ -223,6 +223,9 @@ const updateProduct = async function(req, res) {
 
         //reading updates
         let updates = req.body
+        if (Object.keys(updates || req.files).length < 0) {
+            return res.send({ status: false, message: "Body can't be empty" })
+        }
         let upData = {};
         const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments } = updates
 
@@ -304,17 +307,29 @@ const updateProduct = async function(req, res) {
             upData["installments"] = installments
         }
 
+
+
         let files = req.files
-        if ("files" in req.files) {
-
-
-
-
-            if (files && files.length > 0) {
-                var productUrl = await uploadFile(files[0])
-            } 
-            updates.productImage = productUrl
+        console.log(req.files)
+            // if (req.files.length === 0) {
+            //     return res.status(400).send({ status: false, msg: "Please select file" })
+            // }
+        if (req.files.length == 0 && req.files != undefined) {
+            // if (validator.isValid(files)) {
+            return res.status(400).send({ status: false, msg: "Please select file" })
         }
+        if (req.files.length > 0) {
+            if (files && files.length > 0) {
+
+                var updateImage = await uploadFile(files[0])
+            } else {
+                return res.status(400).send({ msg: "No files found" })
+            }
+
+            updates.productImage = updateImage
+        }
+
+
         let productUpdated = await productModel.findOneAndUpdate({ _id: product_id, isDeleted: false }, { $set: updates }, { new: true })
         res.status(200).send({ status: true, message: "Product updated", date: productUpdated })
 
@@ -324,6 +339,7 @@ const updateProduct = async function(req, res) {
         res.status(500).send({ status: false, msg: error.message })
     }
 }
+
 
 const deleteProduct = async function(req, res) {
     try {
