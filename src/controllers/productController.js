@@ -223,9 +223,13 @@ const updateProduct = async function(req, res) {
 
         //reading updates
         let updates = req.body
-        if (Object.keys(updates || req.files).length < 0) {
+        req.files
+        console.log(req.files)
+        if(req.files==undefined){
+        if (Object.keys(updates).length === 0) {
             return res.send({ status: false, message: "Body can't be empty" })
         }
+    }
         let upData = {};
         const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments } = updates
 
