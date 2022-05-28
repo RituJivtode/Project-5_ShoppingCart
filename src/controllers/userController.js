@@ -70,7 +70,7 @@ const createUser = async function(req, res) {
             }
             if (!validator.isValid(lname)) {
                 return res.status(400).send({ status: false, msg: " Lastname is required" })
-            }
+            } 
             // Email is Mandatory...
             if (!validator.isValid(email)) {
                 return res.status(400).send({ status: false, msg: "Email is required" })
@@ -121,9 +121,10 @@ const createUser = async function(req, res) {
             let StreetRegex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
             let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
 
-            let address = req.body.address
+            let addressData = req.body.address
+            console.log(req.body.address)
 
-            // let address = JSON.parse(addressData)
+            let address = JSON.parse(addressData)
 
             if (Object.keys(address).length != 0) {
                 if (!StreetRegex.test(address.shipping.street)) {
@@ -263,7 +264,7 @@ const getUser = async function(req, res) {
 //--------------------------------------------------------------------
 
 const updateUser = async function(req, res) {
-    try {
+    try { 
         let requestBody = req.body
         let user_id = req.params.userId
         let files = req.files
@@ -273,7 +274,7 @@ const updateUser = async function(req, res) {
         let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
         let { fname, lname, email, phone, password, address } = requestBody
         let filterBody = {};
-
+        let value = await userModel.findOne({_id:user_id})
         if (Object.keys(requestBody).length === 0) {
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
@@ -352,48 +353,77 @@ const updateUser = async function(req, res) {
             filterBody["password"] = password
 
         }
-        if ("address" in requestBody) {
 
-            if (!address || Object.keys(address).length == 0) return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
-                // address = JSON.parse(address)
+       
+        if("address" in requestBody){
+            address = JSON.stringify(address)
+            address= JSON.parse(address)
+            
+                if (!address || Object.keys(address).length == 0) return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
+                //  address = JSON.stringify(address)
+                //  address= JSON.parse(address)
+                const{shipping, billing} = address 
+                if ("shipping" in address) {
+                    const{street, city, pincode} = shipping
+                    if("street" in shipping){
+                if(!validator.isValid(street)){
+                    return res.status(400).send({status:false,message:"street is not valid"})
+                }
+                filterBody["address.shipping.street"]=street
+                }
 
-            if (!validator.isValid(address.shipping.street)) {
-                // if (!StreetRegex.test(address.shipping.street))
-                return res.status(400).send({ status: false, message: "Invalid Shipping street" })
+                if("city" in shipping){
+                    if(!validator.isValid(city)){
+                        return res.status(400).send({status:false,message:"city is not valid"})
+                    }
+                    filterBody["address.shipping.city"]=city
+                    }
+                    if("pincode" in shipping){
+                        if(!PinCodeRegex(pincode)){
+                            return res.status(400).send({status:false,message:"pincode is not valid"})
+                        }
+                        filterBody["address.shipping.pincode"]=pincode
+                        }
+        
+    
             }
-            if (!validator.isValid(address.shipping.city)) {
-
-                return res.status(400).send({ status: false, message: "please enter shipping city" })
+            if ("billing" in address) {
+                const{street, city, pincode} = billing
+                if("street" in billing){
+            if(!validator.isValid(street)){
+                return res.status(400).send({status:false,message:"street is not valid"})
+            }
+            filterBody["address.billing.street"]=street
             }
 
-            if (address.shipping.pincode) {
-                if (!PinCodeRegex.test(address.shipping.pincode))
-                    return res.status(400).send({ status: false, message: "Invalid Shipping pincode" })
-            }
-            if (!validator.isValid(address.billing.street)) {
-                return res.status(400).send({ status: false, message: "Invalid billing street" })
-                    // if (!StreetRegex.test(address.billing.street))
-                    //     return res.status(400).send({ status: false, message: "Invalid billing street" })
-            }
-            if (!validator.isValid(address.billing.city)) {
-
-                return res.status(400).send({ status: false, message: "please enter billing city" })
-            }
-
-            if (address.billing.pincode) {
-                if (!PinCodeRegex.test(address.billing.pincode))
-                    return res.status(400).send({ status: false, message: "Invalid Billing pincode" })
-            }
-            filterBody["address"] = address
-
-        }
+            if("city" in billing){
+                if(!validator.isValid(city)){
+                    return res.status(400).send({status:false,message:"city is not valid"})
+                }
+                filterBody["address.billing.city"]=city
+                }
+                if("pincode" in billing){
+                    if(!PinCodeRegex(pincode)){
+                        return res.status(400).send({status:false,message:"pincode is not valid"})
+                    }
+                    filterBody["address.billing.pincode"]=pincode
+                    }
 
 
-        let update = await userModel.findOneAndUpdate({ _id: user_id }, { $set: filterBody }, { new: true })
-        res.status(200).send({ status: true, message: "User profile updated", date: update })
+                }      
+                // filterBody["address"] = address
 
+    }
 
-    } catch (error) {
+          
+
+        let updates = await userModel.findOneAndUpdate({ _id: user_id }, { $set: filterBody }, { new: true })
+        // let info = await userModel.findOne({_id:user_id})
+        // update= address.billing
+        res.status(200).send({ status: true, message: "User profile updated", data: updates })
+}
+
+     catch (error) {
         res.status(500).send({ status: false, msg: error.message })
     }
 

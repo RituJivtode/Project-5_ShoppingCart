@@ -12,7 +12,7 @@ router.post("/login", userController.login)
 
 router.get("/user/:userId/profile", mid.authentication, userController.getUser)
 
-router.put("/user/:userId/profile", mid.authentication, mid.authorization, userController.updateUser)
+router.put("/user/:userId/profile", userController.updateUser)
 //=====================Product=========================
 
 
