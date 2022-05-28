@@ -226,7 +226,7 @@ const updateProduct = async function(req, res) {
         req.files
         console.log(req.files)
         if(req.files==undefined){
-        if (Object.keys(updates).length === 0) {
+        if (Object.keys(updates).length ===0) {
             return res.send({ status: false, message: "Body can't be empty" })
         }
     }
@@ -313,15 +313,12 @@ const updateProduct = async function(req, res) {
 
 
 
-        let files = req.files
-        console.log(req.files)
-            // if (req.files.length === 0) {
-            //     return res.status(400).send({ status: false, msg: "Please select file" })
-            // }
+        let files = req.files 
+        if(Object.keys(req.body).length===0){
         if (req.files.length == 0 && req.files != undefined) {
-            // if (validator.isValid(files)) {
             return res.status(400).send({ status: false, msg: "Please select file" })
         }
+    } 
         if (req.files.length > 0) {
             if (files && files.length > 0) {
 

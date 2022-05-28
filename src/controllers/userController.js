@@ -266,6 +266,7 @@ const getUser = async function(req, res) {
 const updateUser = async function(req, res) {
     try { 
         let requestBody = req.body
+      
         let user_id = req.params.userId
         let files = req.files
         let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
@@ -274,10 +275,24 @@ const updateUser = async function(req, res) {
         let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
         let { fname, lname, email, phone, password, address } = requestBody
         let filterBody = {};
+
+
         let value = await userModel.findOne({_id:user_id})
+
+//========================================================================
+        if(req.files==undefined){
         if (Object.keys(requestBody).length === 0) {
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
+    }
+
+    //===================================================================
+    // if(req.body.length)
+    if(Object.keys(req.body).length===0){
+        if(req.files.length===0 ){
+            return res.status(400).send({ Status: false, message: "please select file" })
+        }
+    }
         if (files && files.length > 0) {
 
             let profilePhotoUrl = await uploadFile(files[0]);
