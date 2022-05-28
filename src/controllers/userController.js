@@ -244,7 +244,7 @@ const getUser = async function(req, res) {
             }
         }
 
-        const user = await userModel.findOne({ _id: _id })
+        const user = await userModel.findOne($and({ _id: _id }, { isDeleted: false }))
             //no users found
         if (!user) {
             return res.status(404).send({ status: false, message: "user not found" });
