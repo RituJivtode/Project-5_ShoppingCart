@@ -26,7 +26,6 @@ const validInstallment = function isInteger(value) {
     if (value < 0) return false
     if (value % 1 == 0) return true
 }
-<<<<<<< HEAD
 
 
 const isValidRequestBody = function (requestBody) {
@@ -42,7 +41,5 @@ module.exports.isValid = isValid;
 
 module.exports.validInstallment = validInstallment;
 module.exports.isValidRequestBody= isValidRequestBody
-=======
 module.exports.isValid = isValid;
 module.exports.validInstallment = validInstallment;
->>>>>>> dd9ce2e9c5656a92d3c8cda8132f6ea93d49546c

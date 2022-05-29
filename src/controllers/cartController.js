@@ -1,7 +1,7 @@
 const cartModel = require('../models/cartModel');
 const userModel = require('../models/userModel');
 const productModel = require('../models/productModel');
-const { default: mongoose } = require('mongoose');
+// const { default: mongoose } = require('mongoose');
 const mongoose = require("mongoose")
 const validator = require('../middleware/validation')
 
@@ -66,7 +66,82 @@ const createCart = async function (req, res) {
     }
 
 }
-module.exports = { createCart }
+
+//========================================================get cart=========================================================***
+
+const getCart = async function(req, res){
+try{
+    userId = req.params.userId
+    if (!isValidObjectId(userId)) {
+        return res.status(400).send({ status: false, msg: ` this ${userId} is invalid userId` })
+    }
+    let checkUser = await cartModel.findOne({userId:userId})
+    console.log(checkUser)
+    if(!checkUser){
+        return res.status(400).send({ status: false, msg: 'user not found' })
+    }    
+    res.status(200).send({status:false,data: checkUser})
+}
+catch(err){
+    res.status(500).send({status:false,msg: err.message})
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module.exports = { createCart,getCart }
   
     
 

@@ -321,11 +321,11 @@ const updateProduct = async function(req, res) {
         }
     } 
         if (req.files.length > 0) {
-            if (files && files.length > 0) {
-
-                var updateImage = await uploadFile(files[0])
-            } else {
+            if (!(files && files.length > 0)) {
                 return res.status(400).send({ msg: "No files found" })
+                
+            } else {
+                var updateImage = await uploadFile(files[0])
             }
 
             updates.productImage = updateImage
@@ -342,14 +342,8 @@ const updateProduct = async function(req, res) {
     }
 }
 
-<<<<<<< HEAD
-//========================================================================================================================
-
-const deleteProduct = async function (req, res) {
-=======
 
 const deleteProduct = async function(req, res) {
->>>>>>> dd9ce2e9c5656a92d3c8cda8132f6ea93d49546c
     try {
         let id = req.params.productId
 

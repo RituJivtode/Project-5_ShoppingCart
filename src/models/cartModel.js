@@ -1,8 +1,6 @@
 const mongoose = require('mongoose')
 
-ObjectId = mongoose.Types.ObjectId
- 
-const ObjectId = mongoose.Schema.Types.ObjectId
+const ObjectId = mongoose.Types.ObjectId
 
 
 const cartSchema = new mongoose.Schema({
