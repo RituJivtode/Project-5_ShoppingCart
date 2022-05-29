@@ -2,7 +2,7 @@ const cartModel = require('../models/cartModel');
 const userModel = require('../models/userModel');
 const productModel = require('../models/productModel');
 const { default: mongoose } = require('mongoose');
-// const mongoose = require("mongoose")
+const mongoose = require("mongoose")
 const validator = require('../middleware/validation')
 
 
@@ -67,3 +67,6 @@ const createCart = async function (req, res) {
 
 }
 module.exports = { createCart }
+  
+    
+
