@@ -6,7 +6,7 @@ const { AppConfig } = require('aws-sdk');
 const validator = require("../middleware/validation")
 const mongoose = require("mongoose")
 
-const isValidObjectId = function (objectId) {
+const isValidObjectId = function(objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
 }
 
@@ -17,8 +17,8 @@ aws.config.update({
     region: "ap-south-1"
 })
 
-let uploadFile = async (file) => {
-    return new Promise(function (resolve, reject) {
+let uploadFile = async(file) => {
+    return new Promise(function(resolve, reject) {
         // this function will upload file to aws and return the link
         let s3 = new aws.S3({ apiVersion: '2006-03-01' }); // we will be using the s3 service of aws
 
@@ -30,7 +30,7 @@ let uploadFile = async (file) => {
         }
 
 
-        s3.upload(uploadParams, function (err, body) {
+        s3.upload(uploadParams, function(err, body) {
             if (err) {
                 console.log(err)
                 return reject({ "error": err })
@@ -44,7 +44,7 @@ let uploadFile = async (file) => {
 }
 
 
-const createUser = async function (req, res) {
+const createUser = async function(req, res) {
     try {
 
         let body = req.body
@@ -130,9 +130,9 @@ const createUser = async function (req, res) {
                 if (validator.isValidRequestBody(address.shipping.street)) {
                     return res.status(400).send({ status: false, msg: "shipping address is required" })
                 }
-            } return res.status(400).send({ status: false, msg: "shipping street is required" })
-        }
-        else {
+            }
+            return res.status(400).send({ status: false, msg: "shipping street is required" })
+        } else {
             return res.status(400).send({ status: false, msg: "shipping address is required" })
         }
 
@@ -197,7 +197,7 @@ const createUser = async function (req, res) {
 // }
 //---------------------------------------------------------------------------
 
-const login = async function (req, res) {
+const login = async function(req, res) {
     try {
 
         let body = req.body
@@ -243,18 +243,17 @@ const login = async function (req, res) {
             UserId: CheckUser._id,
             batch: "Uranium"
 
-        }, 'FunctionUp Group21', { expiresIn: '86400s' });    // token expiry for 24hrs
+        }, 'FunctionUp Group21', { expiresIn: '86400s' }); // token expiry for 24hrs
 
         return res.status(200).send({ status: true, message: "User login successfull", data: { UserId: CheckUser._id, token: userToken } });
-    }
-    catch (err) {
+    } catch (err) {
         res.status(500).send({ status: false, msg: err.message })
     }
 }
 
 //====================================== Get User =============================================
 
-const getUser = async function (req, res) {
+const getUser = async function(req, res) {
     try {
         //reading userid from path
         const _id = req.params.userId;
@@ -268,8 +267,8 @@ const getUser = async function (req, res) {
             }
         }
 
-        const user = await userModel.findOne({ _id: _id })
-        //no users found
+        const user = await userModel.findOne($and({ _id: _id }, { isDeleted: false }))
+            //no users found
         if (!user) {
             return res.status(404).send({ status: false, message: "user not found" });
         }
@@ -286,7 +285,7 @@ const getUser = async function (req, res) {
 
 //--------------------------------------------------------------------
 
-const updateUser = async function (req, res) {
+const updateUser = async function(req, res) {
     try {
         let requestBody = req.body
 
@@ -300,8 +299,6 @@ const updateUser = async function (req, res) {
         let { fname, lname, email, phone, password, address } = requestBody
 
         let filterBody = {};
-
-
         let value = await userModel.findOne({ _id: user_id })
 
         //========================================================================
@@ -311,7 +308,7 @@ const updateUser = async function (req, res) {
             }
         }
 
-        //===================================================================
+        //=========================================================================
         // if(req.body.length)
         if (Object.keys(req.body).length === 0) {
             if (req.files.length === 0) {
@@ -394,14 +391,13 @@ const updateUser = async function (req, res) {
 
         }
 
-
         if ("address" in requestBody) {
             address = JSON.stringify(address)
             address = JSON.parse(address)
 
             if (!address || Object.keys(address).length == 0) return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
-            //  address = JSON.stringify(address)
-            //  address= JSON.parse(address)
+                //  address = JSON.stringify(address)
+                //  address= JSON.parse(address)
             const { shipping, billing } = address
             if ("shipping" in address) {
                 const { street, city, pincode } = shipping
@@ -455,12 +451,19 @@ const updateUser = async function (req, res) {
 
 
         let updates = await userModel.findOneAndUpdate({ _id: user_id }, { $set: filterBody }, { new: true })
+<<<<<<< HEAD
         // let info = await userModel.findOne({_id:user_id})
         // update= address.billing
         res.status(200).send({ status: true, message: "User profile updated", data: updates })
     }
 
     catch (error) {
+=======
+            // let info = await userModel.findOne({_id:user_id})
+            // update= address.billing
+        res.status(200).send({ status: true, message: "User profile updated", data: updates })
+    } catch (error) {
+>>>>>>> c06fe13a89648b2caedae2680833048098182f03
         res.status(500).send({ status: false, msg: error.message })
     }
 
