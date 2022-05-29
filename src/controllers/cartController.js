@@ -13,7 +13,6 @@ const isValidObjectId = function(objectId) {
 
 const createCart = async function(req, res) {
     try {
-
         let data = req.body
         let userId = req.params.userId
         if (!isValidObjectId(userId)) {
@@ -63,7 +62,7 @@ const createCart = async function(req, res) {
 
 }
 
-//========================================================get cart=========================================================***
+//========================================================get cart======================***
 
 const getCart = async function(req, res) {
     try {
@@ -82,84 +81,30 @@ const getCart = async function(req, res) {
     }
 }
 
-//=======================================================delete cart=========================================================
+//=======================================================delete cart=====================
 
 const deleteCart = async function(req, res) {
     try {
         userId = req.params.userId
-            //id format validation
         if (!isValidObjectId(userId)) {
-            return res.status(400).send({ status: false, msg: ` this ${userId} is invalid userId` })
+            return res.status(400).send({ status: false, msg: `this ${userId} is invalid userId` })
         }
         //check if the document is found with that user id 
-        let checkUser = await userModel.findOne({ _id: userId }, { isDeleted: false })
-        if (!checkUser) { return res.status(400).send({ status: false, msg: "user not found" }) }
-
-        // const tokenUserId = req["userId"]
-        // if (tokenUserId != user._id) {
-        //     return res.status(403).send({ status: false, msg: " not authorized" })
-        // }
-
-        const items = []
-        let cartDeleted = await cartModel.findByIdAndUpdate({ _id: cartId }, { $set: { items: items, totalItems: 0, totalPrice: 0 } }, { new: true })
+        let checkUser = await cartModel.findOne({userId: userId})
+        if (!checkUser) {
+             return res.status(400).send({ status: false, msg: "user not found" }) 
+            }
+        const items = [];
+        let cartDeleted = await cartModel.findOneAndUpdate({ _id:checkUser._id  }, { $set: { items: items, totalItems: 0, totalPrice: 0 } }, { new: true })
         res.status(204).send({ status: true, data: cartDeleted })
-    } catch {
+    } 
+    catch {
         res.status(500).send({ status: false, msg: err.message })
-
+  
     }
 }
 
 
-module.exports = { createCart, getCart, deleteCart }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module.exports = { createCart, getCart }
+module.exports.createCart 
+module.exports.getCart
+module.exports.deleteCart
