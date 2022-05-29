@@ -407,46 +407,42 @@ const updateUser = async function(req, res) {
                     }
                     filterBody["address.shipping.street"] = street
                 }
-            }
-
-            if ("city" in shipping) {
-                if (!validator.isValid(city)) {
-                    return res.status(400).send({ status: false, message: "city is not valid" })
+                if ("city" in shipping) {
+                    if (!validator.isValid(city)) {
+                        return res.status(400).send({ status: false, message: "city is not valid" })
+                    }
+                    filterBody["address.shipping.city"] = city
                 }
-                filterBody["address.shipping.city"] = city
-            }
-            if ("pincode" in shipping) {
-                if (!PinCodeRegex(pincode)) {
-                    return res.status(400).send({ status: false, message: "pincode is not valid" })
+                if ("pincode" in shipping) {
+                    if (!PinCodeRegex(pincode)) {
+                        return res.status(400).send({ status: false, message: "pincode is not valid" })
+                    }
+                    filterBody["address.shipping.pincode"] = pincode
                 }
-                filterBody["address.shipping.pincode"] = pincode
             }
 
-
-        }
-        if ("billing" in address) {
-            const { street, city, pincode } = billing
-            if ("street" in billing) {
-                if (!validator.isValid(street)) {
-                    return res.status(400).send({ status: false, message: "street is not valid" })
+            if ("billing" in address) {
+                const { street, city, pincode } = billing
+                if ("street" in billing) {
+                    if (!validator.isValid(street)) {
+                        return res.status(400).send({ status: false, message: "street is not valid" })
+                    }
+                    filterBody["address.billing.street"] = street
                 }
-                filterBody["address.billing.street"] = street
-            }
 
-            if ("city" in billing) {
-                if (!validator.isValid(city)) {
-                    return res.status(400).send({ status: false, message: "city is not valid" })
+                if ("city" in billing) {
+                    if (!validator.isValid(city)) {
+                        return res.status(400).send({ status: false, message: "city is not valid" })
+                    }
+                    filterBody["address.billing.city"] = city
                 }
-                filterBody["address.billing.city"] = city
-            }
-            if ("pincode" in billing) {
-                if (!PinCodeRegex(pincode)) {
-                    return res.status(400).send({ status: false, message: "pincode is not valid" })
+                if ("pincode" in billing) {
+                    if (!PinCodeRegex(pincode)) {
+                        return res.status(400).send({ status: false, message: "pincode is not valid" })
+                    }
+                    filterBody["address.billing.pincode"] = pincode
                 }
-                filterBody["address.billing.pincode"] = pincode
             }
-
-
         }
         // filterBody["address"] = address
 
@@ -455,10 +451,19 @@ const updateUser = async function(req, res) {
 
 
         let updates = await userModel.findOneAndUpdate({ _id: user_id }, { $set: filterBody }, { new: true })
+<<<<<<< HEAD
+        // let info = await userModel.findOne({_id:user_id})
+        // update= address.billing
+        res.status(200).send({ status: true, message: "User profile updated", data: updates })
+    }
+
+    catch (error) {
+=======
             // let info = await userModel.findOne({_id:user_id})
             // update= address.billing
         res.status(200).send({ status: true, message: "User profile updated", data: updates })
     } catch (error) {
+>>>>>>> c06fe13a89648b2caedae2680833048098182f03
         res.status(500).send({ status: false, msg: error.message })
     }
 
