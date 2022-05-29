@@ -52,16 +52,17 @@ const createProduct = async function(req, res) {
         let reqBody = req.body
             //req body check
         if (Object.keys(reqBody).length === 0) {
+
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
-        //destracture
+        //destructure
         const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments } = reqBody
 
         //validation start
         if (!validator.isValid(title)) {
             return res.status(400).send({ status: false, msg: "title is required" })
         }
-        //uniqe valid...
+        //unique valid...
         let checkTitle = await productModel.findOne({ title: title })
         if (checkTitle) {
             return res.status(400).send({ status: false, msg: "title already exist" })
@@ -99,7 +100,7 @@ const createProduct = async function(req, res) {
         //for valid enum
         if (availableSizes) {
             let array = availableSizes.split(",").map(x => x.trim())
-            console.log(array)
+                // console.log(array)
             for (let i = 0; i < array.length; i++) {
                 if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
                     return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
@@ -171,14 +172,14 @@ const productByQuery = async function(req, res) {
                 }
             }
 
-            queryParams["availableSizes"] = {$regex:size}
+            queryParams["availableSizes"] = { $regex: size }
         }
         if ("name" in req.query) {
 
             if (!validator.isValid(name)) {
                 return res.status(400).send({ status: false, message: "name is required" })
             }
-            queryParams["title"] ={$regex: name}
+            queryParams["title"] = { $regex: name }
 
 
         }
@@ -225,11 +226,11 @@ const updateProduct = async function(req, res) {
         let updates = req.body
         req.files
         console.log(req.files)
-        if(req.files==undefined){
-        if (Object.keys(updates).length === 0) {
-            return res.send({ status: false, message: "Body can't be empty" })
+        if (req.files == undefined) {
+            if (Object.keys(updates).length === 0) {
+                return res.send({ status: false, message: "Body can't be empty" })
+            }
         }
-    }
         let upData = {};
         const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments } = updates
 
@@ -314,20 +315,17 @@ const updateProduct = async function(req, res) {
 
 
         let files = req.files
-        console.log(req.files)
-            // if (req.files.length === 0) {
-            //     return res.status(400).send({ status: false, msg: "Please select file" })
-            // }
-        if (req.files.length == 0 && req.files != undefined) {
-            // if (validator.isValid(files)) {
-            return res.status(400).send({ status: false, msg: "Please select file" })
+        if (Object.keys(req.body).length === 0) {
+            if (req.files.length == 0 && req.files != undefined) {
+                return res.status(400).send({ status: false, msg: "Please select file" })
+            }
         }
         if (req.files.length > 0) {
-            if (files && files.length > 0) {
-
-                var updateImage = await uploadFile(files[0])
-            } else {
+            if (!(files && files.length > 0)) {
                 return res.status(400).send({ msg: "No files found" })
+
+            } else {
+                var updateImage = await uploadFile(files[0])
             }
 
             updates.productImage = updateImage

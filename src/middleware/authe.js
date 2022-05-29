@@ -14,7 +14,9 @@ const authentication = function ( req, res, next) {
             return res.status(400).send({status:false, message: "Token is required..!"});
         }
          let Token = token.split(" ")
+        //  console.log(token)
          let tokenValue = Token[1]
+        //  console.log(tokenValue)
   
        
      jwt.verify(tokenValue,'FunctionUp Group21', function(err, decoded) {
