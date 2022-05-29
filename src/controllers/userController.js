@@ -104,55 +104,43 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, msg: 'phone number already exist' })
         };
 
-        //password Number is Mandatory...
-        if (!validator.isValid(password)) {
-            return res.status(400).send({ Status: false, message: " password is required" })
-        }
+        // //password Number is Mandatory...
+        // if (!validator.isValid(password)) {
+        //     return res.status(400).send({ Status: false, message: " password is required" })
+        // }
         // password Number is Valid...
         let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
         if (!Passwordregex.test(password)) {
             return res.status(401).send({ Status: false, message: " Please enter a valid password, minlength 8, maxxlength 15" })
         }
-
-
-
-        //----------------------------------------------address--------------------------------
-
-        let StreetRegex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
-        let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
-
-        let addressData = req.body.address
-
-        let address = JSON.parse(addressData)
-
-        if (Object.keys(address).length != 0) {
-            if (!StreetRegex.test(address.shipping.street)) {
-                return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
-            }
-            if (!validator.isValid(address.shipping.city)) {
-                return res.status(400).send({ Status: false, message: " Please enter a valid city name" })
-            }
-            if (!PinCodeRegex.test(address.shipping.pincode)) {
-                return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
-            }
-            if (!StreetRegex.test(address.billing.street)) {
-                return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
-            }
-            if (!validator.isValid(address.billing.city)) {
-                return res.status(400).send({ Status: false, message: " Please enter a valid city name" })
-            }
-            if (!PinCodeRegex.test(address.billing.pincode)) {
-                return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
-            }
-        }
-        else {
-            return res.status(400).send({ status: false, message: "Address is required" })
-        }
-
+        
         //generate salt to hash password
         const salt = await bcrypt.genSalt(10);
         // now we set user password to hashed password
         passwordValue = await bcrypt.hash(password, salt);
+
+        
+        //----------------------------------------------address--------------------------------
+
+        let address = req.body.address
+
+
+        if(address.shipping){
+            if(address.shipping.street){
+                if(validator.isValidRequestBody(address.shipping.street)){
+                    return res.status(400).send({status:false,msg:"shipping address is required"})
+                }
+            }return res.status(400).send({status:false,msg:"shipping street is required"})
+        }
+        else{
+            return res.status(400).send({status:false,msg:"shipping address is required"})
+        }
+
+
+
+        //----------------------------------------------address--------------------------------
+ 
+ 
 
         let filterBody = { fname: fname, lname: lname, email: email, phone: phone, password: passwordValue, address: address }
         filterBody.profileImage = profilePicUrl
@@ -216,7 +204,7 @@ const login = async function (req, res) {
         //******------------------- generating token for user -------------------****** //
         let userToken = jwt.sign({
 
-            UserId: CheckUser._id, 
+            UserId: CheckUser._id,
             batch: "Uranium"
 
         }, 'FunctionUp Group21', { expiresIn: '86400s' });    // token expiry for 24hrs
@@ -257,7 +245,7 @@ const getUser = async function (req, res) {
 
     } catch (error) {
         res.status(500).send({ status: false, msg: error.message })
-    } 
+    }
 }
 
 
@@ -268,12 +256,14 @@ const updateUser = async function (req, res) {
     try {
         let requestBody = req.body
         let user_id = req.params.userId
-        let  files  = req.files
+        let files = req.files
         let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
         let Phoneregex = /^[6-9]{1}[0-9]{9}$/
         let StreetRegex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
         let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
+
         let { fname, lname, email, phone, password, address } = requestBody
+
         let filterBody = {};
 
         if (Object.keys(requestBody).length === 0) {
@@ -353,48 +343,65 @@ const updateUser = async function (req, res) {
             filterBody["password"] = password
 
         }
-        if("address" in requestBody){
+
+        if ("address" in requestBody) {
+
+            if (!address || Object.keys(address).length == 0) return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
+            address = JSON.parse(address)
+
+            // if (!validator.isValid(address.shipping.street)) {
+            //     // if (!StreetRegex.test(address.shipping.street))
+            //     return res.status(400).send({ status: false, message: "Invalid Shipping street" })
+            // }
+
+            if (!validator.isValid(address.shipping.city)) {
+
+                return res.status(400).send({ status: false, message: "please enter shipping city" })
+            }
+
+            if (address?.shipping?.pincode) {
+                if (!PinCodeRegex.test(address.shipping.pincode))
+                    return res.status(400).send({ status: false, message: "Invalid Shipping pincode" })
+            }
+            if (!validator.isValid(address.billining.street)) {
+                return res.status(400).send({ status: false, message: "Invalid billing street" })
+                // if (!StreetRegex.test(address.billing.street))
+                //     return res.status(400).send({ status: false, message: "Invalid billing street" })
+            }
+            if (!validator.isValid(address.billing.city)) {
+
+                return res.status(400).send({ status: false, message: "please enter billing city" })
+            }
+
+            if (address?.billing?.pincode) {
+                if (!PinCodeRegex.test(address.billing.pincode))
+                    return res.status(400).send({ status: false, message: "Invalid Billing pincode" })
+            }
+
+            if (address.shipping) {
+                if (address.shipping.street) {
+                    if (!validator.isValid(address.shipping.street)) {
+                        return res.status(400).send({ status: false, message: 'Shipping Street Required' });
+                    }
+                }
             
-                if (!address || Object.keys(address).length == 0) return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
-                address = JSON.parse(address)
-              
-                if (!validator.isValid(address.shipping.street)) {
-                    // if (!StreetRegex.test(address.shipping.street))
-                        return res.status(400).send({ status: false, message: "Invalid Shipping street" })
-                } 
-                if (!validator.isValid(address.shipping.city)) {
-                    
-                        return res.status(400).send({ status: false, message: "please enter shipping city" })
+                else {
+                    return res.status(400).send({ status: false, message: " Invalid request parameters. Shipping street cannot be empty" });
                 }
+            }
 
-                if (address?.shipping?.pincode) {
-                    if (!PinCodeRegex.test(address.shipping.pincode))
-                        return res.status(400).send({ status: false, message: "Invalid Shipping pincode" })
-                }
-                if (!validator.isValid(address.billining.street)) {
-                    return  res.status(400).send({ status: false, message: "Invalid billing street" })
-                    // if (!StreetRegex.test(address.billing.street))
-                    //     return res.status(400).send({ status: false, message: "Invalid billing street" })
-                } 
-                if (!validator.isValid(address.billing.city)) {
-    
-                        return res.status(400).send({ status: false, message: "please enter billing city" })
-                }
 
-                if (address?.billing?.pincode) {
-                    if (!PinCodeRegex.test(address.billing.pincode))
-                        return res.status(400).send({ status: false, message: "Invalid Billing pincode" })
-                }
-            filterBody["address"] = address 
+                filterBody["address"] = address
+
+            }
+
+
+            let update = await userModel.findOneAndUpdate({ _id: user_id }, { $set: filterBody }, { new: true })
+            res.status(200).send({ status: true, message: "User profile updated", data: update })
+
 
         }
-
-
-        let update = await userModel.findOneAndUpdate({ _id: user_id }, { $set: filterBody }, { new: true })
-        res.status(200).send({ status: true, message: "User profile updated", date: update })
-
-
-    } catch (error) {
+    catch (error) {
         res.status(500).send({ status: false, msg: error.message })
     }
 

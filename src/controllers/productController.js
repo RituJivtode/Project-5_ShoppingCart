@@ -52,6 +52,7 @@ const createProduct = async function (req, res) {
         let reqBody = req.body
         //req body check
         if (Object.keys(reqBody).length === 0) {
+
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
         //destracture
@@ -99,7 +100,7 @@ const createProduct = async function (req, res) {
         //for valid enum
         if (availableSizes) {
             let array = availableSizes.split(",").map(x => x.trim())
-            console.log(array)
+            // console.log(array)
             for (let i = 0; i < array.length; i++) {
                 if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
                     return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
@@ -309,6 +310,8 @@ const updateProduct = async function (req, res) {
         res.status(500).send({ status: false, msg: error.message })
     }
 }
+
+//========================================================================================================================
 
 const deleteProduct = async function (req, res) {
     try {
