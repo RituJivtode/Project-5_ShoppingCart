@@ -67,7 +67,7 @@ const createCart = async function(req, res) {
 
 const getCart = async function(req, res) {
     try {
-        userId = req.params.userId
+        let userId = req.params.userId
         if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, msg: ` this ${userId} is invalid userId` })
         }
@@ -86,7 +86,7 @@ const getCart = async function(req, res) {
 
 const deleteCart = async function(req, res) {
     try {
-        userId = req.params.userId
+        let userId = req.params.userId
             //id format validation
         if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, msg: ` this ${userId} is invalid userId` })
@@ -101,9 +101,9 @@ const deleteCart = async function(req, res) {
         // }
 
         const items = []
-        let cartDeleted = await cartModel.findByIdAndUpdate({ _id: cartId }, { $set: { items: items, totalItems: 0, totalPrice: 0 } }, { new: true })
+        let cartDeleted = await cartModel.findByIdAndUpdate({ _id: userId }, { $set: { items: items, totalItems: 0, totalPrice: 0 } }, { new: true })
         res.status(204).send({ status: true, data: cartDeleted })
-    } catch {
+    } catch (err) {
         res.status(500).send({ status: false, msg: err.message })
 
     }
@@ -111,55 +111,3 @@ const deleteCart = async function(req, res) {
 
 
 module.exports = { createCart, getCart, deleteCart }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module.exports = { createCart, getCart }
