@@ -84,12 +84,12 @@ const getCart = async function(req, res) {
 
 
 
-//=======================update cart ===================================================
+//=======================  update cart =========================================================
 
 const cartUpdate= async function(req, res){
    try{
     let requestBody = req.body
-    let user_id=req.params.userId
+    let user_id= req.params.userId
     let filterQuery={}
 
     if (!isValidObjectId(user_id)) {
@@ -148,7 +148,7 @@ $set:removeProduct
 }
 
 let cartupdate= await cartModel.findOneAndUpdate({_id:cartId},{filterQuery},{new:true})
-res.status(200).send({status:true, data:cartupdate})
+res.status(200).send({status:true, message:"cart updated", data:cartupdate})
 
 }
 
