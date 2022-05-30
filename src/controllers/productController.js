@@ -55,14 +55,14 @@ const createProduct = async function(req, res) {
 
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
-        //destracture
+        //destructure
         const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments } = reqBody
 
         //validation start
         if (!validator.isValid(title)) {
             return res.status(400).send({ status: false, msg: "title is required" })
         }
-        //uniqe valid...
+        //unique valid...
         let checkTitle = await productModel.findOne({ title: title })
         if (checkTitle) {
             return res.status(400).send({ status: false, msg: "title already exist" })
@@ -101,7 +101,7 @@ const createProduct = async function(req, res) {
         if (availableSizes) {
             // availableSizes=  availableSizes.toUpperCase()   
             let array = availableSizes.split(",").map(x => x.trim())
-            // console.log(array)
+                // console.log(array)
             for (let i = 0; i < array.length; i++) {
                 if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
                     return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
@@ -160,7 +160,7 @@ const getProduct = async function(req, res) {
 const productByQuery = async function(req, res) {
     try {
         // from Query to QuryParams
-        const { size, name, price } = req.query
+        const { size, name, price,priceGreaterThan, priceLessThan, sort } = req.query
         console.log(req.query)
             // Existence of product=====
         queryParams = {};
@@ -174,28 +174,55 @@ const productByQuery = async function(req, res) {
                 }
             }
 
-            queryParams["availableSizes"] = {$regex:size}
+            queryParams["availableSizes"] = { $regex: size }
         }
         if ("name" in req.query) {
 
             if (!validator.isValid(name)) {
                 return res.status(400).send({ status: false, message: "name is required" })
             }
-            queryParams["title"] ={$regex: name}
+            queryParams["title"] = { $regex: name }
 
 
         }
-        if ("price" in req.query) {
-            if (price <= 0) {
+        // if ("price" in req.query) {
+        //     if (price <= 0) {
+        //         return res.status(400).send({ status: false, message: `Price should be a valid number` })
+        //     }
+        //     queryParams["price"] = price
+        // }
+
+        if("priceGreaterThan" in req.query || "priceLessThan" in req.query){
+            if (priceGreaterThan<=0 || priceLessThan <= 0) {
                 return res.status(400).send({ status: false, message: `Price should be a valid number` })
             }
-            queryParams["price"] = price
+            if("priceGreaterThan" in req.query && "priceLessThan" in req.query){
+            queryParams.price={
+            $gt:priceGreaterThan,
+            $lt:priceLessThan
+          
+            }
+
         }
 
-        let productExist = await productModel.find({ queryParams, isDeleted: false })
-        if (productExist.length == 0) {
-            return res.status(404).send({ status: false, message: "there is no product" })
+        if("priceGreaterThan" in req.query){
+            queryParams.price={
+            $gt:priceGreaterThan,
+            }
+
         }
+        if("priceLessThan" in req.query){
+            queryParams.price={
+           $lt:priceLessThan
+            }
+
+        }
+
+
+    
+    }
+
+   console.log(queryParams.price)
         // sort by price in product collection.==========
         const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: 1 })
         res.status(200).send({ status: true, data: products });
@@ -228,11 +255,11 @@ const updateProduct = async function(req, res) {
         let updates = req.body
         req.files
         console.log(req.files)
-        if(req.files==undefined){
-        if (Object.keys(updates).length ===0) {
-            return res.send({ status: false, message: "Body can't be empty" })
+        if (req.files == undefined) {
+            if (Object.keys(updates).length === 0) {
+                return res.send({ status: false, message: "Body can't be empty" })
+            }
         }
-    }
         let upData = {};
         const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments } = updates
 
@@ -316,16 +343,16 @@ const updateProduct = async function(req, res) {
 
 
 
-        let files = req.files 
-        if(Object.keys(req.body).length===0){
-        if (req.files.length == 0 && req.files != undefined) {
-            return res.status(400).send({ status: false, msg: "Please select file" })
+        let files = req.files
+        if (Object.keys(req.body).length === 0) {
+            if (req.files.length == 0 && req.files != undefined) {
+                return res.status(400).send({ status: false, msg: "Please select file" })
+            }
         }
-    } 
         if (req.files.length > 0) {
             if (!(files && files.length > 0)) {
                 return res.status(400).send({ msg: "No files found" })
-                
+
             } else {
                 var updateImage = await uploadFile(files[0])
             }
