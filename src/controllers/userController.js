@@ -50,13 +50,12 @@ const createUser = async function(req, res) {
         let body = req.body
         let files = req.files
 
-        if (files && files.length > 0) {
+        if (!(files && files.length > 0)) {
 
-            var profilePicUrl = await uploadFile(files[0]);
-
-        } else {
             return res.status(400).send({ msg: "No file found" })
-        }
+        } 
+        var profilePicUrl = await uploadFile(files[0]);
+        
         const { fname, lname, email, phone, password } = body
         // body.profileImage= profilePicUrl
 
@@ -105,9 +104,9 @@ const createUser = async function(req, res) {
         };
 
         // //password Number is Mandatory...
-        // if (!validator.isValid(password)) {
-        //     return res.status(400).send({ Status: false, message: " password is required" })
-        // }
+        if (!validator.isValid(password)) {
+            return res.status(400).send({ Status: false, message: " password is required" })
+        }
         // password Number is Valid...
         let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
         if (!Passwordregex.test(password)) {
@@ -120,82 +119,76 @@ const createUser = async function(req, res) {
         passwordValue = await bcrypt.hash(password, salt);
 
 
-        //----------------------------------------------address--------------------------------
+        //---------------------------------------------- shipping address--------------------------------
 
         let address = req.body.address
 
-
         if (address.shipping) {
             if (address.shipping.street) {
-                if (validator.isValidRequestBody(address.shipping.street)) {
-                    return res.status(400).send({ status: false, msg: "shipping address is required" })
+                if (!validator.isValidRequestBody(address.shipping.street)) {
+                    return res.status(400).send({ status: false, message: 'Shipping Street Required' });
                 }
+            } else {
+                return res.status(400).send({ status: false, message: " Shipping street cannot be empty" });
             }
-            return res.status(400).send({ status: false, msg: "shipping street is required" })
-        } else {
-            return res.status(400).send({ status: false, msg: "shipping address is required" })
-        }
+            if (address.shipping.city) {
+                if (!validator.isValidRequestBody(address.shipping.city)) {
+                    return res.status(400).send({ status: false, message: 'Shipping city is Required' });
+                }
+            } else {
+                return res.status(400).send({ status: false, message: "Shipping city cannot be empty" });
+            }
+            if (address.shipping.pincode) {
+                if (!validator.isValidRequestBody(address.shipping.pincode)) {
+                    return res.status(400).send({ status: false, message: 'Shipping pincode Required' });
+                }
+            } else {
+                return res.status(400).send({ status: false, message: "  Shipping pincode cannot be empty" })
+            }
+        } else { return res.status(400).send({ status: false, message: " Shipping address cannot be empty" }) }
+
+
+        //----------------------------------------------billingaddress--------------------------------
+
+        if (address.billing) {
+            if (address.billing.street) {
+                if (!validator.isValidRequestBody(address.billing.street)) {
+                    return res.status(400).send({ status: false, message: ' billing Street Required' });
+                }
+            } else {
+                return res.status(400).send({ status: false, message: "  billing street cannot be empty" });
+            }
+            if (address.billing.city) {
+                if (!validator.isValidRequestBody(address.billing.city)) {
+                    return res.status(400).send({ status: false, message: ' billing city is Required' });
+                }
+            } else {
+                return res.status(400).send({ status: false, message: " billing city cannot be empty" });
+            }
+            if (address.billing.pincode) {
+                if (!validator.isValidRequestBody(address.billing.pincode)) {
+                    return res.status(400).send({ status: false, message: ' billing pincode Required' });
+                }
+            } else {
+                return res.status(400).send({ status: false, message: "   billing pincode cannot be empty" })
+            }
+        } else { return res.status(400).send({ status: false, message: "  billing address cannot be empty" }) }
+
+        //validation ends
 
 
 
-        //----------------------------------------------address--------------------------------
-
-
-
-        // let filterBody = { fname: fname, lname: lname, email: email, phone: phone, password: passwordValue, address: address }
-        // filterBody.profileImage = profilePicUrl
-        // let userCreated = await userModel.create(filterBody)
-        // res.status(201).send({ status: true, msg: "user created successfully", data: userCreated })
+        let filterBody = { fname: fname, lname: lname, email: email, phone: phone, password: passwordValue, address: address }
+        filterBody.profileImage = profilePicUrl
+        let userCreated = await userModel.create(filterBody)
+        res.status(201).send({ status: true, msg: "user created successfully", data: userCreated })
 
     } catch (error) {
         res.status(500).send({ status: false, msg: error.message })
     }
 }
 
-//     //----------------------------------------------address--------------------------------
-
-//     let StreetRegex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
-//     let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
-
-//     let addressData = req.body.address
-//     console.log(req.body.address)
-
-//     let address = JSON.parse(addressData)
-
-//     if (Object.keys(address).length != 0) {
-//         if (!StreetRegex.test(address.shipping.street)) {
-//             return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
-//         }
-//         if (!validator.isValid(address.shipping.city)) {
-//             return res.status(400).send({ Status: false, message: " Please enter a valid city name" })
-//         }
-//         if (!PinCodeRegex.test(address.shipping.pincode)) {
-//             return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
-//         }
-//         if (!StreetRegex.test(address.billing.street)) {
-//             return res.status(400).send({ Status: false, message: " Please enter a valid street address" })
-//         }
-//         if (!validator.isValid(address.billing.city)) {
-//             return res.status(400).send({ Status: false, message: " Please enter a valid city name" })
-//         }
-//         if (!PinCodeRegex.test(address.billing.pincode)) {
-//             return res.status(400).send({ Status: false, message: " Please enter a valid pincode of 6 digit" })
-//         }
-//     } else {
-//         return res.status(400).send({ status: false, message: "Address is required" })
-//     }
-
-//     let filterBody = { fname: fname, lname: lname, email: email, phone: phone, password: passwordValue, address: address }
-//     filterBody.profileImage = profilePicUrl
-//     let userCreated = await userModel.create(filterBody)
-//     res.status(201).send({ status: true, msg: "user created successfully", data: userCreated })
-
-// } catch (error) {
-//     res.status(500).send({ status: false, msg: error.message })
-// }
-
-// }
-//---------------------------------------------------------------------------
+//====================================================login ============================================
 
 const login = async function(req, res) {
     try {
