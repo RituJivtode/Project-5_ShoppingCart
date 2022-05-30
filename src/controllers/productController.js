@@ -158,7 +158,7 @@ const getProduct = async function(req, res) {
 const productByQuery = async function(req, res) {
     try {
         // from Query to QuryParams
-        const { size, name, price,priceGreaterThan, priceLessThan, sort } = req.query
+        const { size, name, price, priceGreaterThan, priceLessThan, sort } = req.query
         console.log(req.query)
             // Existence of product=====
         queryParams = {};
@@ -190,38 +190,38 @@ const productByQuery = async function(req, res) {
         //     queryParams["price"] = price
         // }
 
-        if("priceGreaterThan" in req.query || "priceLessThan" in req.query){
-            if (priceGreaterThan<=0 || priceLessThan <= 0) {
+        if ("priceGreaterThan" in req.query || "priceLessThan" in req.query) {
+            if (priceGreaterThan <= 0 || priceLessThan <= 0) {
                 return res.status(400).send({ status: false, message: `Price should be a valid number` })
             }
-            if("priceGreaterThan" in req.query && "priceLessThan" in req.query){
-            queryParams.price={
-            $gt:priceGreaterThan,
-            $lt:priceLessThan
-          
+            if ("priceGreaterThan" in req.query && "priceLessThan" in req.query) {
+                queryParams.price = {
+                    $gt: priceGreaterThan,
+                    $lt: priceLessThan
+
+                }
+
             }
+
+            if ("priceGreaterThan" in req.query) {
+                queryParams.price = {
+                    $gt: priceGreaterThan,
+                }
+
+            }
+            if ("priceLessThan" in req.query) {
+                queryParams.price = {
+                    $lt: priceLessThan
+                }
+
+            }
+
+
 
         }
 
-        if("priceGreaterThan" in req.query){
-            queryParams.price={
-            $gt:priceGreaterThan,
-            }
-
-        }
-        if("priceLessThan" in req.query){
-            queryParams.price={
-           $lt:priceLessThan
-            }
-
-        }
-
-
-    
-    }
-
-   console.log(queryParams.price)
-        // sort by price in product collection.==========
+        console.log(queryParams.price)
+            // sort by price in product collection.==========
         const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: 1 })
         res.status(200).send({ status: true, data: products });
 

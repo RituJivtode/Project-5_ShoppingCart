@@ -171,8 +171,8 @@ const deleteCart = async function(req, res) {
         let checkUser = await userModel.findOne({ _id: user_id })
         if (!checkUser) { return res.status(400).send({ status: false, msg: "user not found" }) }
 
-        let items = []
-        let cartDeleted = await cartModel.findOneAndUpdate({ userId: user_id }, { items: items, totalItems: 0, totalPrice: 0 }, { new: true })
+        // let items = []
+        let cartDeleted = await cartModel.findOneAndUpdate({ userId: user_id }, { items: [], totalItems: 0, totalPrice: 0 }, { new: true })
         res.status(200).send({ status: true, data: cartDeleted })
     } catch (err) {
         res.status(500).send({ status: false, msg: err.message })
