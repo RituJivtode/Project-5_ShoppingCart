@@ -451,12 +451,10 @@ const updateUser = async function(req, res) {
 
 
         let updates = await userModel.findOneAndUpdate({ _id: user_id }, { $set: filterBody }, { new: true })
-        // let info = await userModel.findOne({_id:user_id})
-        // update= address.billing
+            // let info = await userModel.findOne({_id:user_id})
+            // update= address.billing
         res.status(200).send({ status: true, message: "User profile updated", data: updates })
-    }
-
-    catch (error) {
+    } catch (error) {
         res.status(500).send({ status: false, msg: error.message })
     }
 
