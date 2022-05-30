@@ -137,16 +137,17 @@ if("removeProduct" in requestBody){
     }
 
 
-if(removeProduct==1)
+if(removeProduct==1){
 filterQuery.quantity={
     $inc:-1
 }
-if(removeProduct==0)
+}
+if(removeProduct==0){
 filterQuery.quantity={
 $set:0
 }
 }
-
+}
 let cartupdate= await cartModel.findOneAndUpdate({_id:cartId},{filterQuery},{new:true})
 res.status(200).send({status:true, message:"cart updated", data:cartupdate})
 
