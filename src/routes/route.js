@@ -5,6 +5,7 @@ const productController = require("../controllers/productController")
 const cartController = require("../controllers/cartController")
 
 const mid = require("../middleware/authe")
+//=============================user==========================================
 
 router.post("/register", userController.createUser)
 
@@ -16,7 +17,7 @@ router.put("/user/:userId/profile", mid.authentication, mid.authorization, userC
 
 router.put("/user/:userId/profile", userController.updateUser)
 
-
+//==============================================product====================================
 router.get("/products", productController.productByQuery)
 
 router.get("/products/:productId", productController.getProduct)
@@ -26,6 +27,8 @@ router.post("/products", productController.createProduct)
 router.put("/products/:productId", productController.updateProduct)
 
 router.delete("/products/:productId", productController.deleteProduct)
+
+//==========================================cart===============================================
 
 router.post("/users/:userId/cart", mid.authentication, cartController.createCart)
 
