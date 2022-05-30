@@ -183,12 +183,6 @@ const productByQuery = async function(req, res) {
 
 
         }
-        // if ("price" in req.query) {
-        //     if (price <= 0) {
-        //         return res.status(400).send({ status: false, message: `Price should be a valid number` })
-        //     }
-        //     queryParams["price"] = price
-        // }
 
         if("priceGreaterThan" in req.query || "priceLessThan" in req.query){
             if (priceGreaterThan<=0 || priceLessThan <= 0) {
@@ -202,27 +196,41 @@ const productByQuery = async function(req, res) {
             }
 
         }
-
+        if(!("priceGreaterThan" in req.query && "priceLessThan" in req.query)){
         if("priceGreaterThan" in req.query){
             queryParams.price={
             $gt:priceGreaterThan,
             }
 
         }
+    }
+    if(!("priceGreaterThan" in req.query && "priceLessThan" in req.query)){
         if("priceLessThan" in req.query){
             queryParams.price={
            $lt:priceLessThan
             }
 
+            
         }
 
-
+    }
     
+    }
+
+    if("sort" in req.query){
+        
+        if(!validator.isValid(sort)){
+            return res.status(400).send({status:false,message:"please provide input"})
+        }
+
+        if(!(sort==1 || sort == -1)){
+            return res.status(400).send({status:false,message:"wrong input"})
+        }
     }
 
    console.log(queryParams.price)
         // sort by price in product collection.==========
-        const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: 1 })
+        const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: sort })
         res.status(200).send({ status: true, data: products });
 
 
