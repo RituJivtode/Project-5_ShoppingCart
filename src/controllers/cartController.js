@@ -59,8 +59,8 @@ const createCart = async function (req, res) {
 
         let cartCreate = await cartModel.create(data)
         res.status(201).send({ status: true, data: cartCreate })
-   
-    } 
+
+    }
     catch (err) {
         res.status(500).send({ status: true, msg: err.message })
     }
@@ -71,7 +71,7 @@ const createCart = async function (req, res) {
 
 const getCart = async function (req, res) {
     try {
-        
+
         let userId = req.params.userId
         if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, msg: ` this ${userId} is invalid userId` })
@@ -85,9 +85,9 @@ const getCart = async function (req, res) {
     }
     catch (err) {
         res.status(200).send({ status: true, data: checkUser })
-    } 
+    }
 }
- 
+
 
 
 
@@ -160,9 +160,7 @@ const cartUpdate = async function (req, res) {
         let cartupdate = await cartModel.findOneAndUpdate({ _id: cartId }, { filterQuery }, { new: true })
         res.status(200).send({ status: true, message: "cart updated", data: cartupdate })
 
-    }
-
-    catch (err) {
+    } catch (err) {
         res.status(500).send({ status: false, msg: err.message })
     }
 }
@@ -171,29 +169,32 @@ const cartUpdate = async function (req, res) {
 
 const deleteCart = async function (req, res) {
     try {
-        let userId = req.params.userId
+        let user_id = req.params.userId
         //id format validation
-        if (!isValidObjectId(userId)) {
-            return res.status(400).send({ status: false, msg: `this ${userId} is invalid userId` })
+        if (!isValidObjectId(user_id)) {
+            return res.status(400).send({ status: false, msg: `this ${user_id} is invalid userId` })
         }
         //check if the document is found with that user id 
         let checkUser = await userModel.findOne({ _id: userId }, { isDeleted: false })
         console.log(checkUser)
         if (!checkUser) { return res.status(400).send({ status: false, msg: "user not found" }) }
 
-        let checkId = await cartModel({ userId: userId })
-        if(!checkId){
-            return res.status(400).send({status: false, msg: "user does not exist"})
-        } 
+        let checkId = await cartModel({ userId: user_id })
+        if (!checkId) {
+            return res.status(400).send({ status: false, msg: "user does not exist" })
+        }
 
-        let cartDeleted = await cartModel.findOneAndUpdate({ userId: userId }, { $set: { items:[], totalItems: 0, totalPrice: 0 } }, { new: true }).select({ items: 1, totalPrice: 1, totalItems: 1, _id: 0 });
+        let cartDeleted = await cartModel.findOneAndUpdate({ userId: user_id }, { $set: { items: [], totalItems: 0, totalPrice: 0 } }, { new: true }).select({ items: 1, totalPrice: 1, totalItems: 1, _id: 0 });
 
         console.log(cartDeleted)
-        res.status(204).send({ status: true,msg:"cart data successfully deleted", data: cartDeleted })
+        res.status(204).send({ status: true, msg: "cart data successfully deleted", data: cartDeleted })
 
-    } catch (err) {
+        // let items = []
+        // let cartDeleted = await cartModel.findOneAndUpdate({ userId: user_id }, { items: items, totalItems: 0, totalPrice: 0 }, { new: true })
+        // res.status(200).send({ status: true, data: cartDeleted })
+    }
+    catch (err) {
         res.status(500).send({ status: false, msg: err.message })
-
     }
 }
 
