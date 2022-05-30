@@ -139,11 +139,11 @@ if("removeProduct" in requestBody){
 
 if(removeProduct==1)
 filterQuery.quantity={
-    $inc:removeProduct
+    $inc:-1
 }
 if(removeProduct==0)
 filterQuery.quantity={
-$set:removeProduct
+$set:0
 }
 }
 
