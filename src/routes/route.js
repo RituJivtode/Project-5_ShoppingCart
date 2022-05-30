@@ -37,6 +37,6 @@ router.get("/users/:userId/cart", mid.authentication, cartController.getCart)
 
 // router.delete("/users/:userId/cart", cartController.deleteCart)
 
-router.delete("/users/:userId/cart", cartController.deleteCart)
+router.delete("/users/:userId/cart", mid.authentication, cartController.deleteCart)
 
 module.exports = router;

@@ -92,17 +92,14 @@ const deleteCart = async function(req, res) {
             return res.status(400).send({ status: false, msg: ` this ${userId} is invalid userId` })
         }
         //check if the document is found with that user id 
-        let checkUser = await userModel.findOne({ _id: userId }, { isDeleted: false })
-        if (!checkUser) { return res.status(400).send({ status: false, msg: "user not found" }) }
+        let checkUser = await userModel.findOne({ _id: userId })
+        if (!checkUser) { return res.status(404).send({ status: false, msg: "user not found" }) }
 
-        // const tokenUserId = req["userId"]
-        // if (tokenUserId != user._id) {
-        //     return res.status(403).send({ status: false, msg: " not authorized" })
-        // }
+
 
         const items = []
-        let cartDeleted = await cartModel.findByIdAndUpdate({ _id: userId }, { $set: { items: items, totalItems: 0, totalPrice: 0 } }, { new: true })
-        res.status(204).send({ status: true, data: cartDeleted })
+        let cartDeleted = await cartModel.findByIdAndUpdate({ userId: userId }, { items: items, totalItems: 0, totalPrice: 0 }, { new: true })
+        res.status(200).send({ status: true, data: cartDeleted })
     } catch (err) {
         res.status(500).send({ status: false, msg: err.message })
 
