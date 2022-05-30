@@ -158,7 +158,7 @@ const getProduct = async function(req, res) {
 const productByQuery = async function(req, res) {
     try {
         // from Query to QuryParams
-        const { size, name, price } = req.query
+        const { size, name, price,priceGreaterThan, priceLessThan, sort } = req.query
         console.log(req.query)
             // Existence of product=====
         queryParams = {};
@@ -183,17 +183,44 @@ const productByQuery = async function(req, res) {
 
 
         }
-        if ("price" in req.query) {
-            if (price <= 0) {
+        // if ("price" in req.query) {
+        //     if (price <= 0) {
+        //         return res.status(400).send({ status: false, message: `Price should be a valid number` })
+        //     }
+        //     queryParams["price"] = price
+        // }
+
+        if("priceGreaterThan" in req.query || "priceLessThan" in req.query){
+            if (priceGreaterThan<=0 || priceLessThan <= 0) {
                 return res.status(400).send({ status: false, message: `Price should be a valid number` })
             }
-            queryParams["price"] = price
+            if("priceGreaterThan" in req.query && "priceLessThan" in req.query){
+            queryParams.price={
+            $gt:priceGreaterThan,
+            $lt:priceLessThan
+          
+            }
+
         }
 
-        let productExist = await productModel.find({ queryParams, isDeleted: false })
-        if (productExist.length == 0) {
-            return res.status(404).send({ status: false, message: "there is no product" })
+        if("priceGreaterThan" in req.query){
+            queryParams.price={
+            $gt:priceGreaterThan,
+            }
+
         }
+        if("priceLessThan" in req.query){
+            queryParams.price={
+           $lt:priceLessThan
+            }
+
+        }
+
+
+    
+    }
+
+   console.log(queryParams.price)
         // sort by price in product collection.==========
         const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: 1 })
         res.status(200).send({ status: true, data: products });
