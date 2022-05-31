@@ -305,7 +305,7 @@ const updateProduct = async function(req, res) {
             }
             upData["currencyId"] = currencyId
         }
-        upData["currencyId"] = currencyId
+    
         if ("currencyFormat" in updates) {
             if (!validator.isValid(currencyFormat)) {
                 return res.status(400).send({ status: false, msg: "currencyFormat is required" })

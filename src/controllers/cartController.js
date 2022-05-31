@@ -153,11 +153,15 @@ const cartUpdate = async function (req, res) {
             if (removeProduct < 0 || removeProduct > 1) {
                 return res.status(400).send({ status: false, message: "give Valid value of the remove roduct" })
             }
-            //items.splice
-//totalprice=totalprice-items[I].quqntity*product.price
-// items.splice(I,1)
-// totalitems -=1
+ 
+                             //items.splice
+                  //totalprice=totalprice-items[I].quqntity*product.price
+                    // items.splice(I,1)
+                       // totalitems -=1
           
+//---------------------need to find index at which this product lies---------------------
+
+
             for(let i= 0;i<cartExist.items.length;i++){
                 if(productId==cartExist.items[i].productId){
                     var index= i;
@@ -191,8 +195,6 @@ const cartUpdate = async function (req, res) {
                 }
             
                 }
-            }
-        }
             
             if (removeProduct == 0) {
                     let itemsleft= cartExist.totalItems - 1
@@ -206,6 +208,8 @@ const cartUpdate = async function (req, res) {
                   }
             
                 }
+            }
+        }
         
         
         let cartupdate = await cartModel.findOneAndUpdate({ _id: cartId },  {$set:filterQuery} , { new: true })
