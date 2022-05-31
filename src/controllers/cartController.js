@@ -114,15 +114,23 @@ const cartUpdate = async function (req, res) {
 
 
         const { cartId, productId, removeProduct } = requestBody
+
+        if (!validator.isValid(cartId)) {
+            return res.status(400).send({ status: false, msg: 'cartId must be present' })
+        }
         if (!isValidObjectId(cartId)) {
             return res.status(400).send({ status: false, msg: ` this ${cartId} is invalid cartId` })
         }
 
-        let CartExist = await cartModel.findOne({ _id: cartId })
-        if (!CartExist) {
+        let cartExist = await cartModel.findOne({ _id: cartId })
+        if (!cartExist) {
             return res.status(404).send({ status: false, msg: "cart not exist" })
         }
 
+
+        if (!validator.isValid(productId)) {
+            return res.status(400).send({ status: false, msg: 'productId must be present' })
+        }
 
         if (!isValidObjectId(productId)) {
             return res.status(400).send({ status: false, msg: ` this ${productId} is invalid productId` })
@@ -132,31 +140,71 @@ const cartUpdate = async function (req, res) {
             return res.status(404).send({ status: false, msg: "product not exist" })
         }
 
-        if ("removeProduct" in requestBody) {
-            if (isNan(removeProduct)) {
+//--------------------------remove produc-------------------------------------//t
+        if (!validator.isValid(removeProduct)) {
+            return res.status(400).send({ status: false, message: "give removeProduct value in the request body " })
+        }
+       
+            if (isNaN(removeProduct)) {
                 return res.status(400).send({ status: false, message: "Not a number" })
             }
-            if (!validator.isValid(removeProduct)) {
-                return res.status(400).send({ status: false, message: "give removeProduct value in the request body " })
-            }
+            
             if (removeProduct < 0 || removeProduct > 1) {
-                return res.status(400).send({ status: false, message: "give removeProduct value in the request body " })
+                return res.status(400).send({ status: false, message: "give Valid value of the remove roduct" })
+            }
+          
+            for(let i= 0;i<cartExist.items.length;i++){
+                if(productId==cartExist.items[i].productId){
+                    var index= i;
+                }
             }
 
 
             if (removeProduct == 1) {
-                filterQuery.quantity = {
-                    $inc: -1
-                }
-                //need to add some more ==
+                if(cartExist.items[index].quantity==1){
+              let itemsleft= cartExist.totalItems - 1
+               let priceRemain = cartExist.totalPrice - productExist.price
+            let quantityremain=[]
+            filterQuery={
+                totalItems:itemsleft,
+                totalPrice:priceRemain,
+                items:quantityremain
+
             }
+                }
+                else if(cartExist.items[index].quantity>1){
+                    let itemsleft= cartExist.totalItems 
+                    let priceRemain = cartExist.totalPrice - productExist.price
+                 let quantityremain=  cartExist.items[index].quantity - 1
+                 filterQuery={
+
+                    totalItems:itemsleft,
+                    totalPrice:priceRemain,
+                     items:quantityremain
+
+                 }
+
+
+                }
+            
+                }
+               
+
+            
             if (removeProduct == 0) {
-                filterQuery.quantity = {
-                    $set: 0
+                    let itemsleft= cartExist.totalItems - 1
+                     let priceRemain = cartExist.totalPrice - (cartExist.items[index].quantity * productExist.price)
+                  let items=[]
+                  filterQuery={
+                      totalItems:itemsleft,
+                      totalPrice:priceRemain,
+                      items:quantityremain
+      
+                  }
+            
                 }
-                //need to add to some more===
-            }
-        }
+        
+        
         let cartupdate = await cartModel.findOneAndUpdate({ _id: cartId }, { filterQuery }, { new: true })
         res.status(200).send({ status: true, message: "cart updated", data: cartupdate })
 
@@ -175,7 +223,7 @@ const deleteCart = async function (req, res) {
             return res.status(400).send({ status: false, msg: `this ${user_id} is invalid userId` })
         }
         //check if the document is found with that user id 
-        let checkUser = await userModel.findOne({ _id: userId }, { isDeleted: false })
+        let checkUser = await userModel.findOne({ _id: user_id }, { isDeleted: false })
         console.log(checkUser)
         if (!checkUser) { return res.status(400).send({ status: false, msg: "user not found" }) }
 

@@ -273,14 +273,14 @@ const updateProduct = async function(req, res) {
             if (!validator.isValid(title)) {
                 return res.status(400).send({ status: false, msg: "title is required" })
             }
-            upData["title"] = title
-
+        
             //check uniqueness of product title
             const uniqueTitle = await productModel.findOne({ title: title });
 
             if (uniqueTitle) {
                 return res.status(400).send({ status: false, message: `${title} already exist` });
             }
+            upData["title"] = title
 
         }
 
@@ -298,12 +298,12 @@ const updateProduct = async function(req, res) {
             upData["price"] = price
         }
 
-        if ("currencyId" in updates) {
-            if (!validator.isValid(currencyId)) {
-                return res.status(400).send({ status: false, msg: "currencyId is required" })
-            }
-            upData["currencyId"] = currencyId
-        }
+        // if ("currencyId" in updates) {
+        //     if (!validator.isValid(currencyId)) {
+        //         return res.status(400).send({ status: false, msg: "currencyId is required" })
+        //     }
+        //     upData["currencyId"] = currencyId
+        // }
         upData["currencyId"] = currencyId
         if ("currencyFormat" in updates) {
             if (!validator.isValid(currencyFormat)) {
