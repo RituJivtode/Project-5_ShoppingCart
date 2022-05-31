@@ -102,11 +102,11 @@ const cartUpdate = async function (req, res) {
         if (!isValidObjectId(user_id)) {
             return res.status(400).send({ status: false, msg: ` this ${user_id} is invalid userid` })
         }
-        let userExist = await userModel.findOne({ _id: user_id })
+        let userExist = await cartModel.findOne({ _id: user_id })
 
-        // if (!userExist) {
-        //     return res.status(404).send({ status: false, msg: "user not exist" })
-        // }
+        if (!userExist) {
+            return res.status(404).send({ status: false, msg: "user not exist" })
+        }
 
         if (Object.keys(requestBody).length === 0) {
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
@@ -160,6 +160,11 @@ const cartUpdate = async function (req, res) {
                 }
             }
 
+//items.splice
+//totalprice=totalprice-items[I].quqntity*product.price
+// items.splice(I,1)
+// totalitems -=1
+
 
             if (removeProduct == 1) {
                 if(cartExist.items[index].quantity==1){
@@ -177,11 +182,15 @@ const cartUpdate = async function (req, res) {
                     let itemsleft= cartExist.totalItems 
                     let priceRemain = cartExist.totalPrice - productExist.price
                  let quantityremain=  cartExist.items[index].quantity - 1
+                
+
                  filterQuery={
 
                     totalItems:itemsleft,
                     totalPrice:priceRemain,
-                     items:[{productId:productId, quantity:quantityremain}]
+                    // items[index]:[{productId:productId, quantity:quantityremain}]
+                    
+                    
 
                  }
 
