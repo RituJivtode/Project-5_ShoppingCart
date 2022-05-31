@@ -299,13 +299,13 @@ const updateProduct = async function(req, res) {
             upData["price"] = price
         }
 
-        // if ("currencyId" in updates) {
-        //     if (!validator.isValid(currencyId)) {
-        //         return res.status(400).send({ status: false, msg: "currencyId is required" })
-        //     }
-        //     upData["currencyId"] = currencyId
-        // }
-        // upData["currencyId"] = currencyId
+        if ("currencyId" in updates) {
+            if (!validator.isValid(currencyId)) {
+                return res.status(400).send({ status: false, msg: "currencyId is required" })
+            }
+            upData["currencyId"] = currencyId
+        }
+        upData["currencyId"] = currencyId
         if ("currencyFormat" in updates) {
             if (!validator.isValid(currencyFormat)) {
                 return res.status(400).send({ status: false, msg: "currencyFormat is required" })
