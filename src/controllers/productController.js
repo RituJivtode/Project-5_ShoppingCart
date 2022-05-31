@@ -99,26 +99,28 @@ const createProduct = async function(req, res) {
         }
         //for valid enum
         if (availableSizes) {
+            // availableSizes=  availableSizes.toUpperCase()   
             let array = availableSizes.split(",").map(x => x.trim())
                 // console.log(array)
             for (let i = 0; i < array.length; i++) {
                 if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
                     return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
                 }
+
+                let uniqueAvailableSize = [...new Set(array)]
+                reqBody.availableSizes = uniqueAvailableSize
             }
         }
 
         if (!validator.validInstallment(installments)) {
             return res.status(400).send({ status: false, msg: "installments can't be a decimal number & must be greater than equalto zero " })
         }
+        reqBody.productImage = updateImage
 
-        //save all key data
-        let filterBody = { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments }
-        filterBody.productImage = updateImage
         console.log(updateImage)
             //successfully created product
-        let productCreated = await productModel.create(filterBody)
-        res.status(201).send({ status: true, data: productCreated })
+        let productCreated = await productModel.create(reqBody)
+        res.status(201).send({ status: true, data: reqBody })
     } catch (err) {
         return res.status(500).send({ status: false, msg: err.message })
     }
@@ -158,7 +160,7 @@ const getProduct = async function(req, res) {
 const productByQuery = async function(req, res) {
     try {
         // from Query to QuryParams
-        const { size, name, price, priceGreaterThan, priceLessThan, sort } = req.query
+        const { size, name, priceGreaterThan, priceLessThan, priceSort } = req.query
         console.log(req.query)
             // Existence of product=====
         queryParams = {};
@@ -183,12 +185,6 @@ const productByQuery = async function(req, res) {
 
 
         }
-        // if ("price" in req.query) {
-        //     if (price <= 0) {
-        //         return res.status(400).send({ status: false, message: `Price should be a valid number` })
-        //     }
-        //     queryParams["price"] = price
-        // }
 
         if ("priceGreaterThan" in req.query || "priceLessThan" in req.query) {
             if (priceGreaterThan <= 0 || priceLessThan <= 0) {
@@ -219,10 +215,39 @@ const productByQuery = async function(req, res) {
 
 
         }
+        if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
+            if ("priceGreaterThan" in req.query) {
+                queryParams.price = {
+                    $gt: priceGreaterThan,
+                }
+
+            }
+        }
+        if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
+            if ("priceLessThan" in req.query) {
+                queryParams.price = {
+                    $lt: priceLessThan
+                }
+            }
+
+        }
+
+
+
+        if ("priceSort" in req.query) {
+
+            if (!validator.isValid(priceSort)) {
+                return res.status(400).send({ status: false, message: "please provide input" })
+            }
+
+            if (!(priceSort == 1 || priceSort == -1)) {
+                return res.status(400).send({ status: false, message: "wrong input" })
+            }
+        }
 
         console.log(queryParams.price)
             // sort by price in product collection.==========
-        const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: 1 })
+        const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: priceSort })
         res.status(200).send({ status: true, data: products });
 
 

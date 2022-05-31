@@ -29,7 +29,7 @@ const createCart = async function(req, res) {
             return res.status(403).send({ status: false, msg: " not authorized" })
         }
 
-        if (!data.productId) {
+        if (!validator.isValid(data.productId)) {
             return res.status(400).send({ status: false, msg: 'productId must be present' })
         }
         let productId = await productModel.findOne({ _id: data.productId, isDeleted: false })
@@ -54,8 +54,12 @@ const createCart = async function(req, res) {
         if (addingCart) {
             return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
         }
+
+
+
         let cartCreate = await cartModel.create(data)
         res.status(201).send({ status: true, data: cartCreate })
+
     } catch (err) {
         res.status(500).send({ status: true, msg: err.message })
     }
@@ -66,6 +70,7 @@ const createCart = async function(req, res) {
 
 const getCart = async function(req, res) {
     try {
+
         let userId = req.params.userId
         if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, msg: ` this ${userId} is invalid userId` })
@@ -75,9 +80,9 @@ const getCart = async function(req, res) {
         if (!checkUser) {
             return res.status(400).send({ status: false, msg: 'user not found' })
         }
-        res.status(200).send({ status: true, data: checkUser })
+        res.status(200).send({ status: false, data: checkUser })
     } catch (err) {
-        res.status(500).send({ status: false, msg: err.message })
+        res.status(200).send({ status: true, data: checkUser })
     }
 }
 
@@ -168,7 +173,8 @@ const deleteCart = async function(req, res) {
             return res.status(400).send({ status: false, msg: `this ${user_id} is invalid userId` })
         }
         //check if the document is found with that user id 
-        let checkUser = await userModel.findOne({ _id: user_id })
+        let checkUser = await userModel.findOne({ _id: userId }, { isDeleted: false })
+        console.log(checkUser)
         if (!checkUser) { return res.status(400).send({ status: false, msg: "user not found" }) }
 
         // let items = []
@@ -176,6 +182,7 @@ const deleteCart = async function(req, res) {
         res.status(200).send({ status: true, data: cartDeleted })
     } catch (err) {
         res.status(500).send({ status: false, msg: err.message })
+
 
     }
 }
