@@ -104,9 +104,9 @@ const cartUpdate = async function (req, res) {
         }
         let userExist = await userModel.findOne({ _id: user_id })
 
-        if (!userExist) {
-            return res.status(404).send({ status: false, msg: "user not exist" })
-        }
+        // if (!userExist) {
+        //     return res.status(404).send({ status: false, msg: "user not exist" })
+        // }
 
         if (Object.keys(requestBody).length === 0) {
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
@@ -114,6 +114,7 @@ const cartUpdate = async function (req, res) {
 
 
         const { cartId, productId, removeProduct } = requestBody
+        console.log(requestBody)
 
         if (!validator.isValid(cartId)) {
             return res.status(400).send({ status: false, msg: 'cartId must be present' })
@@ -168,7 +169,7 @@ const cartUpdate = async function (req, res) {
             filterQuery={
                 totalItems:itemsleft,
                 totalPrice:priceRemain,
-                items:quantityremain
+                items:[{productId:productId, quantity:quantityremain}]
 
             }
                 }
@@ -180,7 +181,7 @@ const cartUpdate = async function (req, res) {
 
                     totalItems:itemsleft,
                     totalPrice:priceRemain,
-                     items:quantityremain
+                     items:[{productId:productId, quantity:quantityremain}]
 
                  }
 
@@ -194,7 +195,7 @@ const cartUpdate = async function (req, res) {
             if (removeProduct == 0) {
                     let itemsleft= cartExist.totalItems - 1
                      let priceRemain = cartExist.totalPrice - (cartExist.items[index].quantity * productExist.price)
-                  let items=[]
+                  let quantityremain=[]
                   filterQuery={
                       totalItems:itemsleft,
                       totalPrice:priceRemain,
@@ -205,7 +206,7 @@ const cartUpdate = async function (req, res) {
                 }
         
         
-        let cartupdate = await cartModel.findOneAndUpdate({ _id: cartId }, { filterQuery }, { new: true })
+        let cartupdate = await cartModel.findOneAndUpdate({ _id: cartId },  {$set:filterQuery} , { new: true })
         res.status(200).send({ status: true, message: "cart updated", data: cartupdate })
 
     } catch (err) {
