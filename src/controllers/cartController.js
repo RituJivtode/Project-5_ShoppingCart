@@ -20,7 +20,7 @@ const createCart = async function (req, res) {
         }
         let user = await userModel.findOne({ _id: userId, isDeleted: false })
         if (!user) {
-            return res.status(400).send({ status: false, msg: "user id not found " })
+            return res.status(400).send({ status: false, msg: "user  not found " })
         }
 
         const tokenUserId = req["userId"]
@@ -102,7 +102,7 @@ const cartUpdate = async function (req, res) {
         if (!isValidObjectId(user_id)) {
             return res.status(400).send({ status: false, msg: ` this ${user_id} is invalid userid` })
         }
-        let userExist = await cartModel.findOne({ _id: user_id })
+        let userExist = await cartModel.findOne({ userId: user_id })
 
         if (!userExist) {
             return res.status(404).send({ status: false, msg: "user not exist" })
@@ -170,28 +170,26 @@ const cartUpdate = async function (req, res) {
                 if(cartExist.items[index].quantity==1){
               let itemsleft= cartExist.totalItems - 1
                let priceRemain = cartExist.totalPrice - productExist.price
-            let quantityremain=[]
+            cartExist.items.splice(index,1)
             filterQuery={
                 totalItems:itemsleft,
                 totalPrice:priceRemain,
-                items:[{productId:productId, quantity:quantityremain}]
+                items:cartExist.items
 
             }
                 }
                 else if(cartExist.items[index].quantity>1){
                     let itemsleft= cartExist.totalItems 
                     let priceRemain = cartExist.totalPrice - productExist.price
-                 let quantityremain=  cartExist.items[index].quantity - 1
+                 cartExist.items[index].quantity--
                 
 
                  filterQuery={
 
                     totalItems:itemsleft,
                     totalPrice:priceRemain,
-                    // items[index]:[{productId:productId, quantity:quantityremain}]
+                    items:cartExist.items
                     
-                    
-
                  }
 
 
@@ -204,11 +202,11 @@ const cartUpdate = async function (req, res) {
             if (removeProduct == 0) {
                     let itemsleft= cartExist.totalItems - 1
                      let priceRemain = cartExist.totalPrice - (cartExist.items[index].quantity * productExist.price)
-                  let quantityremain=[]
+                cartExist.items.splice(index,1)
                   filterQuery={
                       totalItems:itemsleft,
                       totalPrice:priceRemain,
-                      items:quantityremain
+                      items:cartExist.items
       
                   }
             
