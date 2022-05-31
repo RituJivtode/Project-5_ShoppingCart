@@ -153,20 +153,15 @@ const cartUpdate = async function (req, res) {
             if (removeProduct < 0 || removeProduct > 1) {
                 return res.status(400).send({ status: false, message: "give Valid value of the remove roduct" })
             }
+            //items.splice
+//totalprice=totalprice-items[I].quqntity*product.price
+// items.splice(I,1)
+// totalitems -=1
           
             for(let i= 0;i<cartExist.items.length;i++){
                 if(productId==cartExist.items[i].productId){
                     var index= i;
-                }
-            }
-
-//items.splice
-//totalprice=totalprice-items[I].quqntity*product.price
-// items.splice(I,1)
-// totalitems -=1
-
-
-            if (removeProduct == 1) {
+                 if (removeProduct == 1) {
                 if(cartExist.items[index].quantity==1){
               let itemsleft= cartExist.totalItems - 1
                let priceRemain = cartExist.totalPrice - productExist.price
@@ -196,8 +191,8 @@ const cartUpdate = async function (req, res) {
                 }
             
                 }
-               
-
+            }
+        }
             
             if (removeProduct == 0) {
                     let itemsleft= cartExist.totalItems - 1
