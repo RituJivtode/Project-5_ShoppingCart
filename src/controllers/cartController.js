@@ -22,11 +22,7 @@ const {items}= data
         }
         let user = await userModel.findOne({ _id: userId, isDeleted: false })
         if (!user) {
-<<<<<<< HEAD
             return res.status(404).send({ status: false, msg: "user  not found " })
-=======
-            return res.status(400).send({ status: false, msg: "user  not found " })
->>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
         }
 
         const tokenUserId = req["userId"]

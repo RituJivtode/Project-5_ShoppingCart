@@ -167,15 +167,6 @@ const productByQuery = async function(req, res) {
         queryParams = {};
         if ("size" in req.query) {
 
-<<<<<<< HEAD
-            let array = availableSizes.split(",").map(x => x.trim())
-            // console.log(array)
-        for (let i = 0; i < array.length; i++) {
-            if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
-                return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
-            }
-        }
-=======
             let array = size.split(",").map(x => x.trim())
  
             for (let i = 0; i < array.length; i++) {
@@ -184,7 +175,6 @@ const productByQuery = async function(req, res) {
                 }
             }
             //$addtoset
->>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
 
             queryParams["availableSizes"] = { $regex: size }
         }
@@ -222,11 +212,7 @@ const productByQuery = async function(req, res) {
         if("priceLessThan" in req.query){
             queryParams.price={
            $lt:priceLessThan
-<<<<<<< HEAD
-            }
-=======
             } 
->>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
         }
     }
     
@@ -319,11 +305,7 @@ const updateProduct = async function(req, res) {
             }
             upData["currencyId"] = currencyId
         }
-<<<<<<< HEAD
-        
-=======
     
->>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
         if ("currencyFormat" in updates) {
             if (!validator.isValid(currencyFormat)) {
                 return res.status(400).send({ status: false, msg: "currencyFormat is required" })

@@ -50,3 +50,5 @@ if(!tottalItems){
 }
 
 }
+
+module.exports = {createOrder}
