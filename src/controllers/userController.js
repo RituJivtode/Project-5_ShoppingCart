@@ -260,7 +260,7 @@ const getUser = async function(req, res) {
             }
         }
 
-        const user = await userModel.findOne($and({ _id: _id }, { isDeleted: false }))
+        const user = await userModel.findOne({ _id: _id }, { isDeleted: false })
             //no users found
         if (!user) {
             return res.status(404).send({ status: false, message: "user not found" });
@@ -439,10 +439,6 @@ const updateUser = async function(req, res) {
             }
         }
         // filterBody["address"] = address
-
-
-
-
 
         let updates = await userModel.findOneAndUpdate({ _id: user_id }, { $set: filterBody }, { new: true })
             // let info = await userModel.findOne({_id:user_id})
