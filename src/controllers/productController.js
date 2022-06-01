@@ -166,14 +166,13 @@ const productByQuery = async function(req, res) {
         queryParams = {};
         if ("size" in req.query) {
 
-            let array = size.split(",").map(x => x.trim())
-
+            let array = availableSizes.split(",").map(x => x.trim())
+                // console.log(array)
             for (let i = 0; i < array.length; i++) {
                 if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
                     return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
                 }
             }
-            //$addtoset
 
             queryParams["availableSizes"] = { $regex: size }
         }
@@ -199,22 +198,6 @@ const productByQuery = async function(req, res) {
                 }
 
             }
-
-            if ("priceGreaterThan" in req.query) {
-                queryParams.price = {
-                    $gt: priceGreaterThan,
-                }
-
-            }
-            if ("priceLessThan" in req.query) {
-                queryParams.price = {
-                    $lt: priceLessThan
-                }
-
-            }
-
-
-
         }
         if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
             if ("priceGreaterThan" in req.query) {
@@ -241,56 +224,34 @@ const productByQuery = async function(req, res) {
                 return res.status(400).send({ status: false, message: "please provide input" })
             }
 
-            <<
-            << << < HEAD
-            if (!(priceSort == 1 || priceSort == -1)) {
-                return res.status(400).send({ status: false, message: "wrong input" })
+        }
+
+        if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
+            if ("priceLessThan" in req.query) {
+                queryParams.price = {
+                    $lt: priceLessThan
+                }
             }
         }
 
-        console.log(queryParams.price)
-            // sort by price in product collection.==========
-            ===
-            === =
+
+
+        if ("priceSort" in req.query) {
+
+            if (!validator.isValid(priceSort)) {
+                return res.status(400).send({ status: false, message: "please provide input" })
+            }
+
+            console.log(queryParams.price)
+                // sort by price in product collection.==========
+
+
+        }
+        const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: priceSort })
+        res.status(200).send({ status: true, data: products });
+    } catch (error) {
+        res.status(500).send({ status: false, msg: error.message })
     }
-}
-if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
-    if ("priceLessThan" in req.query) {
-        queryParams.price = {
-                $lt: priceLessThan <<
-                    << << < HEAD
-            } ===
-            === =
-    } >>>
-    >>> > 06e b4e73d3ebd15250a57357fd33bfb6281ddaed
-}
-}
-
-}
-
-if ("priceSort" in req.query) {
-
-    if (!validator.isValid(priceSort)) {
-        return res.status(400).send({ status: false, message: "please provide input" })
-    }
-
-    if (!(priceSort == 1 || priceSort == -1)) {
-        return res.status(400).send({ status: false, message: "wrong input" })
-    }
-}
-
-console.log(queryParams.price)
-    // sort by price in product collection.==========
-    >>>
-    >>> > f01dcd205d942d111ed30c078ba9ccbd25049504
-const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: priceSort })
-res.status(200).send({ status: true, data: products });
-
-
-}
-catch (error) {
-    res.status(500).send({ status: false, msg: error.message })
-}
 
 }
 
@@ -357,14 +318,8 @@ const updateProduct = async function(req, res) {
                 return res.status(400).send({ status: false, msg: "currencyId is required" })
             }
             upData["currencyId"] = currencyId
-        } <<
-        << << < HEAD
+        }
 
-            ===
-            === =
-
-            >>>
-            >>> > 06e b4e73d3ebd15250a57357fd33bfb6281ddaed
         if ("currencyFormat" in updates) {
             if (!validator.isValid(currencyFormat)) {
                 return res.status(400).send({ status: false, msg: "currencyFormat is required" })

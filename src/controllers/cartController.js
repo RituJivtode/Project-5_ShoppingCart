@@ -38,13 +38,13 @@ const createCart = async function(req, res) {
         if (!productId) {
             return res.status(404).send({ status: false, msg: 'product not found' })
         }
-        console.log(productId)
-            // if (!data.quantity) {
-            //     return res.status(400).send({ status: false, msg: "iteams Quentity must be present more than 1" })
-            // }
-            // if (!validator.validInstallment(data.quantity)) {
-            //     return res.status(400).send({ status: false, msg: "iteams Quentity must be valid or >= 1" })
-            // }
+
+        // if (!data.quantity) {
+        //     return res.status(400).send({ status: false, msg: "iteams Quentity must be present more than 1" })
+        // }
+        // if (!validator.validInstallment(data.quantity)) {
+        //     return res.status(400).send({ status: false, msg: "iteams Quentity must be valid or >= 1" })
+        // }
 
 
         if (items) {
@@ -78,7 +78,7 @@ const createCart = async function(req, res) {
 
 }
 
-//========================================================get cart======================***
+//======================================================== get cart======================***
 
 const getCart = async function(req, res) {
     try {
@@ -164,56 +164,34 @@ const cartUpdate = async function(req, res) {
             return res.status(400).send({ status: false, message: "give Valid value of the remove roduct" })
         }
 
-        //items.splice
-        //totalprice=totalprice-items[I].quqntity*product.price
-        // items.splice(I,1)
-        // totalitems -=1
+
 
         //---------------------need to find index at which this product lies---------------------
 
-        for (let i = 0; i < cartExist.items.length; i++) {
-            if (productId == cartExist.items[i].productId) {
-                var index = i;
-                if (removeProduct == 1) {
-                    if (cartExist.items[index].quantity == 1) {
-                        let itemsleft = cartExist.totalItems - 1
-                        let priceRemain = cartExist.totalPrice - productExist.price
-                        cartExist.items.splice(index, 1)
-                        filterQuery = {
-                            totalItems: itemsleft,
-                            totalPrice: priceRemain,
-                            items: cartExist.items
 
-                        }
-                    } else if (cartExist.items[index].quantity > 1) {
-                        let itemsleft = cartExist.totalItems
-                        let priceRemain = cartExist.totalPrice - productExist.price
-                        cartExist.items[index].quantity--
+        filterQuery = {
+
+            totalItems: itemsleft,
+            totalPrice: priceRemain,
+            items: cartExist.items
+
+        }
 
 
-                            filterQuery = {
 
-                                totalItems: itemsleft,
-                                totalPrice: priceRemain,
-                                items: cartExist.items
+        if (removeProduct == 0) {
+            let itemsleft = cartExist.totalItems - 1
+            let priceRemain = cartExist.totalPrice - (cartExist.items[index].quantity * productExist.price)
+            cartExist.items.splice(index, 1)
+            filterQuery = {
+                totalItems: itemsleft,
+                totalPrice: priceRemain,
+                items: cartExist.items
 
-                            }
-                    }
-                }
-
-                if (removeProduct == 0) {
-                    let itemsleft = cartExist.totalItems - 1
-                    let priceRemain = cartExist.totalPrice - (cartExist.items[index].quantity * productExist.price)
-                    cartExist.items.splice(index, 1)
-                    filterQuery = {
-                        totalItems: itemsleft,
-                        totalPrice: priceRemain,
-                        items: cartExist.items
-
-                    }
-                }
             }
         }
+
+
 
 
         let cartupdate = await cartModel.findOneAndUpdate({ _id: cartId }, { $set: filterQuery }, { new: true })
@@ -224,7 +202,7 @@ const cartUpdate = async function(req, res) {
     }
 }
 
-//=======================================================delete cart=====================
+//=======================================================delete cart===========================
 
 const deleteCart = async function(req, res) {
     try {
@@ -234,13 +212,20 @@ const deleteCart = async function(req, res) {
             return res.status(400).send({ status: false, msg: `this ${user_id} is invalid userId` })
         }
         //check if the document is found with that user id 
-        let checkUser = await userModel.findOne({ _id: user_id }, { isDeleted: false })
-        console.log(checkUser)
+        let checkUser = await userModel.findOne({ _id: user_id })
         if (!checkUser) { return res.status(400).send({ status: false, msg: "user not found" }) }
 
-        // let items = []
-        let cartDeleted = await cartModel.findOneAndUpdate({ userId: user_id }, { items: [], totalItems: 0, totalPrice: 0 }, { new: true })
-        res.status(200).send({ status: true, data: cartDeleted })
+        let checkId = await cartModel({ userId: user_id })
+        if (!checkId) {
+            return res.status(404).send({ status: false, msg: "user does not exist" })
+        }
+
+        let cartDeleted = await cartModel.findOneAndUpdate({ userId: user_id }, { $set: { items: [], totalItems: 0, totalPrice: 0 } }, { new: true }).select({ items: 1, totalPrice: 1, totalItems: 1, _id: 0 });
+
+        console.log(cartDeleted)
+        res.status(204).send({ status: true, msg: "cart data successfully deleted", data: cartDeleted })
+
+
     } catch (err) {
         res.status(500).send({ status: false, msg: err.message })
     }
