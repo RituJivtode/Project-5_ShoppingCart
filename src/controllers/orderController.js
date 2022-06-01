@@ -129,7 +129,7 @@ const updateOrder = async function (req, res) {
 
         }
 
-        let orderPresent = await findOne({_id:orderId})
+        let orderPresent = await orderModel.findOne({_id:orderId})
 
         if(!orderPresent){
             return res.status(404).send({ status: false, message: "Order not found" })
