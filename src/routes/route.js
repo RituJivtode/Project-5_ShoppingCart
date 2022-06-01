@@ -3,7 +3,7 @@ const router = express.Router(); //used express to create route handlers
 const userController = require("../controllers/userController")
 const productController = require("../controllers/productController")
 const cartController = require("../controllers/cartController")
-const orderController = require("../controllers/orderController")
+const orderController = require('../controllers/orderController')
 
 
 const mid = require("../middleware/authe")
@@ -32,7 +32,7 @@ router.delete("/products/:productId", productController.deleteProduct)
 
 //==========================================cart===============================================
 
-router.post("/users/:userId/cart", mid.authentication, cartController.createCart)
+router.post("/users/:userId/cart",  cartController.createCart)
 
 router.get("/users/:userId/cart", mid.authentication, cartController.getCart)
 router.put("/users/:userId/cart",cartController.cartUpdate)
@@ -42,5 +42,7 @@ router.delete("/users/:userId/cart", mid.authentication,  mid.authorization, car
 //===========================================order========================================
 
 router.post("/users/:userId/orders", orderController.createOrder)
+router.put("/users/:userId/orders", orderController.updateOrder)
+
 
 module.exports = router;

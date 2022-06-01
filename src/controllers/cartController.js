@@ -14,7 +14,7 @@ const isValidObjectId = function (objectId) {
 const createCart = async function (req, res) {
     try {
         let data = req.body
-const {items}= data
+        const { items } = data
 
         let userId = req.params.userId
         if (!isValidObjectId(userId)) {
@@ -25,11 +25,11 @@ const {items}= data
             return res.status(404).send({ status: false, msg: "user  not found " })
         }
 
-        const tokenUserId = req["userId"]
-        console.log(tokenUserId)
-        if (tokenUserId != user._id) {
-            return res.status(403).send({ status: false, msg: " not authorized" })
-        }
+        // const tokenUserId = req["userId"]
+        // console.log(tokenUserId)
+        // if (tokenUserId != user._id) {
+        //     return res.status(403).send({ status: false, msg: " not authorized" })
+        // }
 
         if (!validator.isValid(data.productId)) {
             return res.status(400).send({ status: false, msg: 'productId must be present' })
@@ -38,37 +38,37 @@ const {items}= data
         if (!productId) {
             return res.status(404).send({ status: false, msg: 'product not found' })
         }
-console.log(productId)
-        // if (!data.quantity) {
-        //     return res.status(400).send({ status: false, msg: "iteams Quentity must be present more than 1" })
-        // }
-        // if (!validator.validInstallment(data.quantity)) {
-        //     return res.status(400).send({ status: false, msg: "iteams Quentity must be valid or >= 1" })
-        // }
-
-         
-             if(items){
- let checkQuentity = await cartModel.findOne(items.quantity)
-             
- console.log(checkQuentity)
-if(checkQuentity!=0){
-    let r = await cartModel.findOneAndUpdate({$inc:{checkQuentity:1}})
-}
-             
-let quantity = 1
-
-        data.items = [{ productId: data.productId, quantity: quantity }]
-
-        data.userId = user._id
-        data.totalPrice = (productId.price) * ( r)
-        data.totalItems = 1;
-
-        let addingCart = await cartModel.findOneAndUpdate({ userId: user._id }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "_v": 0 })
-
-        if (addingCart) {
-            return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
+        console.log(productId)
+        if (!data.quantity) {
+            return res.status(400).send({ status: false, msg: "iteams Quentity must be present more than 1" })
         }
-    }
+        if (!validator.validInstallment(data.quantity)) {
+            return res.status(400).send({ status: false, msg: "iteams Quentity must be valid or >= 1" })
+        }
+
+
+    //    if (items) {
+    //         let checkQuentity = await cartModel.findOne(items.quantity)
+
+    //         console.log(checkQuentity)
+    //         if (checkQuentity != 0) {
+    //             let r = await cartModel.findOneAndUpdate({ $inc: { checkQuentity: 1 } })
+    //         }
+
+        //     let quantity = 1
+
+            data.items = [{ productId: data.productId, quantity: data.quantity }]
+
+            data.userId = user._id
+            data.totalPrice = (productId.price) * (productId.items)
+            data.totalItems = 1;
+
+            let addingCart = await cartModel.findOneAndUpdate({ userId: user._id }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "_v": 0 })
+
+            if (addingCart) {
+                return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
+            }
+        
         let cartCreate = await cartModel.create(data)
         res.status(201).send({ status: true, data: cartCreate })
 
@@ -153,78 +153,78 @@ const cartUpdate = async function (req, res) {
             return res.status(404).send({ status: false, msg: "product not exist" })
         }
 
-//--------------------------remove produc-------------------------------------//t
+        //--------------------------remove produc-------------------------------------//t
         if (!validator.isValid(removeProduct)) {
             return res.status(400).send({ status: false, message: "give removeProduct value in the request body " })
         }
-       
-            if (isNaN(removeProduct)) {
-                return res.status(400).send({ status: false, message: "Not a number" })
-            }
-            
-            if (removeProduct < 0 || removeProduct > 1) {
-                return res.status(400).send({ status: false, message: "give Valid value of the remove roduct" })
-            }
- 
-                             //items.splice
-                  //totalprice=totalprice-items[I].quqntity*product.price
-                    // items.splice(I,1)
-                       // totalitems -=1
-          
-//---------------------need to find index at which this product lies---------------------
+
+        if (isNaN(removeProduct)) {
+            return res.status(400).send({ status: false, message: "Not a number" })
+        }
+
+        if (removeProduct < 0 || removeProduct > 1) {
+            return res.status(400).send({ status: false, message: "give Valid value of the remove roduct" })
+        }
+
+        //items.splice
+        //totalprice=totalprice-items[I].quqntity*product.price
+        // items.splice(I,1)
+        // totalitems -=1
+
+        //---------------------need to find index at which this product lies---------------------
 
 
-            for(let i= 0;i<cartExist.items.length;i++){
-                if(productId==cartExist.items[i].productId){
-                    var index= i;
-                 if (removeProduct == 1) {
-                if(cartExist.items[index].quantity==1){
-              let itemsleft= cartExist.totalItems - 1
-               let priceRemain = cartExist.totalPrice - productExist.price
-            cartExist.items.splice(index,1)
-            filterQuery={
-                totalItems:itemsleft,
-                totalPrice:priceRemain,
-                items:cartExist.items
+        for (let i = 0; i < cartExist.items.length; i++) {
+            if (productId == cartExist.items[i].productId) {
+                var index = i;
+                if (removeProduct == 1) {
+                    if (cartExist.items[index].quantity == 1) {
+                        let itemsleft = cartExist.totalItems - 1
+                        let priceRemain = cartExist.totalPrice - productExist.price
+                        cartExist.items.splice(index, 1)
+                        filterQuery = {
+                            totalItems: itemsleft,
+                            totalPrice: priceRemain,
+                            items: cartExist.items
 
-            }
+                        }
+                    }
+                    else if (cartExist.items[index].quantity > 1) {
+                        let itemsleft = cartExist.totalItems
+                        let priceRemain = cartExist.totalPrice - productExist.price
+                        cartExist.items[index].quantity--
+
+
+                        filterQuery = {
+
+                            totalItems: itemsleft,
+                            totalPrice: priceRemain,
+                            items: cartExist.items
+
+                        }
+
+
+                    }
+
                 }
-                else if(cartExist.items[index].quantity>1){
-                    let itemsleft= cartExist.totalItems 
-                    let priceRemain = cartExist.totalPrice - productExist.price
-                 cartExist.items[index].quantity--
-                
 
-                 filterQuery={
+                if (removeProduct == 0) {
+                    let itemsleft = cartExist.totalItems - 1
+                    let priceRemain = cartExist.totalPrice - (cartExist.items[index].quantity * productExist.price)
+                    cartExist.items.splice(index, 1)
+                    filterQuery = {
+                        totalItems: itemsleft,
+                        totalPrice: priceRemain,
+                        items: cartExist.items
 
-                    totalItems:itemsleft,
-                    totalPrice:priceRemain,
-                    items:cartExist.items
-                    
-                 }
+                    }
 
-
-                }
-            
-                }
-            
-            if (removeProduct == 0) {
-                    let itemsleft= cartExist.totalItems - 1
-                     let priceRemain = cartExist.totalPrice - (cartExist.items[index].quantity * productExist.price)
-                cartExist.items.splice(index,1)
-                  filterQuery={
-                      totalItems:itemsleft,
-                      totalPrice:priceRemain,
-                      items:cartExist.items
-      
-                  }
-            
                 }
             }
         }
-        
-        
-        let cartupdate = await cartModel.findOneAndUpdate({ _id: cartId },  {$set:filterQuery} , { new: true })
+
+
+        let cartupdate = await cartModel.findOneAndUpdate({ _id: cartId }, { $set: filterQuery }, { new: true })
         res.status(200).send({ status: true, message: "cart updated", data: cartupdate })
 
     } catch (err) {
