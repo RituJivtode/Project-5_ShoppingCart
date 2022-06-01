@@ -14,13 +14,15 @@ const isValidObjectId = function (objectId) {
 const createCart = async function (req, res) {
     try {
         let data = req.body
+const {items}= data
+
         let userId = req.params.userId
         if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, msg: ` this ${userId} is invalid userId` })
         }
         let user = await userModel.findOne({ _id: userId, isDeleted: false })
         if (!user) {
-            return res.status(400).send({ status: false, msg: "user id not found " })
+            return res.status(404).send({ status: false, msg: "user  not found " })
         }
 
         const tokenUserId = req["userId"]
@@ -34,29 +36,39 @@ const createCart = async function (req, res) {
         }
         let productId = await productModel.findOne({ _id: data.productId, isDeleted: false })
         if (!productId) {
-            return res.status(400).send({ status: false, msg: 'product not found' })
+            return res.status(404).send({ status: false, msg: 'product not found' })
         }
+console.log(productId)
+        // if (!data.quantity) {
+        //     return res.status(400).send({ status: false, msg: "iteams Quentity must be present more than 1" })
+        // }
+        // if (!validator.validInstallment(data.quantity)) {
+        //     return res.status(400).send({ status: false, msg: "iteams Quentity must be valid or >= 1" })
+        // }
 
-        if (!data.quantity) {
-            return res.status(400).send({ status: false, msg: "iteams Quentity must be present more than 1" })
-        }
-        if (!validator.validInstallment(data.quantity)) {
-            return res.status(400).send({ status: false, msg: "iteams Quentity must be valid or >= 1" })
-        }
+         
+             if(items){
+ let checkQuentity = await cartModel.findOne(items.quantity)
+             
+ console.log(checkQuentity)
+if(checkQuentity!=0){
+    let r = await cartModel.findOneAndUpdate({$inc:{checkQuentity:1}})
+}
+             
+let quantity = 1
 
-        data.items = [{ productId: data.productId, quantity: data.quantity }]
+        data.items = [{ productId: data.productId, quantity: quantity }]
 
         data.userId = user._id
-        data.totalPrice = (productId.price) * (data.quantity)
+        data.totalPrice = (productId.price) * ( r)
         data.totalItems = 1;
+
         let addingCart = await cartModel.findOneAndUpdate({ userId: user._id }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "_v": 0 })
 
         if (addingCart) {
             return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
         }
-
-
-
+    }
         let cartCreate = await cartModel.create(data)
         res.status(201).send({ status: true, data: cartCreate })
 

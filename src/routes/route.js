@@ -33,8 +33,8 @@ router.delete("/products/:productId", productController.deleteProduct)
 router.post("/users/:userId/cart", mid.authentication, cartController.createCart)
 
 router.get("/users/:userId/cart", mid.authentication, cartController.getCart)
-router.put("users/:userId/cart", cartController.cartUpdate)
+router.put("users/:userId/cart", mid.authentication, mid.authorization, cartController.cartUpdate)
 
-router.delete("/users/:userId/cart", mid.authentication, cartController.deleteCart)
+router.delete("/users/:userId/cart", mid.authentication,  mid.authorization, cartController.deleteCart)
 
 module.exports = router;

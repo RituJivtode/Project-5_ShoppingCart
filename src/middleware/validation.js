@@ -41,5 +41,4 @@ module.exports.isValid = isValid;
 
 module.exports.validInstallment = validInstallment;
 module.exports.isValidRequestBody= isValidRequestBody
-module.exports.isValid = isValid;
-module.exports.validInstallment = validInstallment;
+ 
