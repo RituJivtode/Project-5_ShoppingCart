@@ -104,6 +104,11 @@ try{
     let requestBody = req.body
     let userId = req.params.userId
     const {status, orderId} = requestBody
+
+    if(!isValidObjectId(userId)){
+        return res.status(400).send({status:false, message:"provide Valid userId"})
+        }
+
     let userExist = await cartModel.findOne({userId:userId})
     if(!userExist){
     return res.status(404).send({status:false, message:"user not found"})
@@ -133,9 +138,10 @@ try{
     return res.status(400).send({status:false, message:"status can not be pending"})
     }
     if(status==cancled){
-        userExist.cancellable===false
+        if(userExist.cancellable===false){
         return res.status(400).send({status:false, message:"order Can not be cancelled"})
     }
+}
   
     
     let orderStatus = await orderModel.findOneAndUpdate({_id:orderId},{$set:requestBody},{new:true})
