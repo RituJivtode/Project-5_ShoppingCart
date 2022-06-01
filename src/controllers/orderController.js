@@ -132,8 +132,8 @@ try{
     if(status==pending){
     return res.status(400).send({status:false, message:"status can not be pending"})
     }
-    if(status==cancellled){
-        userExist.cancellable==false
+    if(status==cancled){
+        userExist.cancellable===false
         return res.status(400).send({status:false, message:"order Can not be cancelled"})
     }
   
@@ -148,4 +148,6 @@ try{
     }
 }
     
+
+module.exports.updateOrder= updateOrder
     
