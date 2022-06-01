@@ -22,11 +22,7 @@ const {items}= data
         }
         let user = await userModel.findOne({ _id: userId, isDeleted: false })
         if (!user) {
-<<<<<<< HEAD
-            return res.status(404).send({ status: false, msg: "user  not found " })
-=======
             return res.status(400).send({ status: false, msg: "user  not found " })
->>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
         }
 
         const tokenUserId = req["userId"]
@@ -42,7 +38,7 @@ const {items}= data
         if (!productId) {
             return res.status(404).send({ status: false, msg: 'product not found' })
         }
-console.log(productId)
+
         // if (!data.quantity) {
         //     return res.status(400).send({ status: false, msg: "iteams Quentity must be present more than 1" })
         // }
@@ -83,7 +79,7 @@ let quantity = 1
 
 }
 
-//========================================================get cart======================***
+//======================================================== get cart======================***
 
 const getCart = async function (req, res) {
     try {
@@ -170,10 +166,7 @@ const cartUpdate = async function (req, res) {
                 return res.status(400).send({ status: false, message: "give Valid value of the remove roduct" })
             }
  
-                             //items.splice
-                  //totalprice=totalprice-items[I].quqntity*product.price
-                    // items.splice(I,1)
-                       // totalitems -=1
+                    
           
 //---------------------need to find index at which this product lies---------------------
 
@@ -236,7 +229,7 @@ const cartUpdate = async function (req, res) {
     }
 }
 
-//=======================================================delete cart=====================
+//=======================================================delete cart===========================
 
 const deleteCart = async function (req, res) {
     try {
@@ -246,13 +239,12 @@ const deleteCart = async function (req, res) {
             return res.status(400).send({ status: false, msg: `this ${user_id} is invalid userId` })
         }
         //check if the document is found with that user id 
-        let checkUser = await userModel.findOne({ _id: user_id }, { isDeleted: false })
-        console.log(checkUser)
+        let checkUser = await userModel.findOne({ _id: user_id })
         if (!checkUser) { return res.status(400).send({ status: false, msg: "user not found" }) }
 
         let checkId = await cartModel({ userId: user_id })
         if (!checkId) {
-            return res.status(400).send({ status: false, msg: "user does not exist" })
+            return res.status(404).send({ status: false, msg: "user does not exist" })
         }
 
         let cartDeleted = await cartModel.findOneAndUpdate({ userId: user_id }, { $set: { items: [], totalItems: 0, totalPrice: 0 } }, { new: true }).select({ items: 1, totalPrice: 1, totalItems: 1, _id: 0 });

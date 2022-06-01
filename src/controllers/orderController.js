@@ -50,3 +50,102 @@ if(!tottalItems){
 }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const updateOrder = async function (req, res){
+try{
+    let requestBody = req.body
+    let userId = req.params.userId
+    const {status, orderId} = requestBody
+    let userExist = await cartModel.findOne({userId:userId})
+    if(!userExist){
+    return res.status(404).send({status:false, message:"user not found"})
+    }
+    if(object.keys(requestBody).length===0)
+    {
+    return res.status(400).send({status:false, message:"fill required value in body"})
+    }
+    
+    if(!orderId){
+    if(!validator.isValid(orderId)){
+    return res.status(400).send({status:false, message:"provide orderId in request body"})
+    }
+    if(!isValidObjectId(orderId)){
+    return res.status(400).send({status:false, message:"provide Valid cartId in request body"})
+    }
+    
+    }
+    
+    if(!status){
+    if(!validator.isValid(status)){
+    return res.status(400).send({status:false, message:"provide cartId in request body"})
+    }
+    }
+    
+    if(status==pending){
+    return res.status(400).send({status:false, message:"status can not be pending"})
+    }
+    if(status==cancellled){
+        userExist.cancellable==false
+        return res.status(400).send({status:false, message:"order Can not be cancelled"})
+    }
+  
+    
+    let orderStatus = await orderModel.findOneAndUpdate({_id:orderId},{$set:requestBody},{new:true})
+    let cartUpdate = await cartModel.findOneAndUpdate({userId:userId},{$set:{items:[],totalPrice:0,totalItems:0}},{new:true})
+    res.status(200).send({status:true,data:orderStatus})
+    }
+    
+    catch (err) {
+        return res.status(500).send({ status: false, msg: err.message })
+    }
+}
+    
+    
