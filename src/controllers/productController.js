@@ -161,12 +161,13 @@ const getProduct = async function(req, res) {
 const productByQuery = async function(req, res) {
     try {
         // from Query to QuryParams
-        const { size, name, price,priceGreaterThan, priceLessThan, sort } = req.query
+        const { size, name,priceGreaterThan, priceLessThan, priceSort } = req.query
         console.log(req.query)
             // Existence of product=====
         queryParams = {};
         if ("size" in req.query) {
 
+<<<<<<< HEAD
             let array = availableSizes.split(",").map(x => x.trim())
             // console.log(array)
         for (let i = 0; i < array.length; i++) {
@@ -174,6 +175,16 @@ const productByQuery = async function(req, res) {
                 return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
             }
         }
+=======
+            let array = size.split(",").map(x => x.trim())
+ 
+            for (let i = 0; i < array.length; i++) {
+                if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
+                    return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
+                }
+            }
+            //$addtoset
+>>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
 
             queryParams["availableSizes"] = { $regex: size }
         }
@@ -211,26 +222,30 @@ const productByQuery = async function(req, res) {
         if("priceLessThan" in req.query){
             queryParams.price={
            $lt:priceLessThan
+<<<<<<< HEAD
             }
+=======
+            } 
+>>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
         }
     }
     
     }
 
-    if("sort" in req.query){
+    if("priceSort" in req.query){
         
-        if(!validator.isValid(sort)){
+        if(!validator.isValid(priceSort)){
             return res.status(400).send({status:false,message:"please provide input"})
         }
 
-        if(!(sort==1 || sort == -1)){
+        if(!(priceSort==1 || priceSort == -1)){
             return res.status(400).send({status:false,message:"wrong input"})
         }
     }
 
    console.log(queryParams.price)
         // sort by price in product collection.==========
-        const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: sort })
+        const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: priceSort })
         res.status(200).send({ status: true, data: products });
 
 
@@ -273,14 +288,14 @@ const updateProduct = async function(req, res) {
             if (!validator.isValid(title)) {
                 return res.status(400).send({ status: false, msg: "title is required" })
             }
-            upData["title"] = title
-
+        
             //check uniqueness of product title
             const uniqueTitle = await productModel.findOne({ title: title });
 
             if (uniqueTitle) {
                 return res.status(400).send({ status: false, message: `${title} already exist` });
             }
+            upData["title"] = title
 
         }
 
@@ -304,7 +319,11 @@ const updateProduct = async function(req, res) {
             }
             upData["currencyId"] = currencyId
         }
+<<<<<<< HEAD
         
+=======
+    
+>>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
         if ("currencyFormat" in updates) {
             if (!validator.isValid(currencyFormat)) {
                 return res.status(400).send({ status: false, msg: "currencyFormat is required" })
@@ -331,15 +350,24 @@ const updateProduct = async function(req, res) {
         if ("availableSizes" in updates) {
 
             let array = availableSizes.split(",").map(x => x.trim())
-            console.log(array)
+            
             for (let i = 0; i < array.length; i++) {
                 if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
                     return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
                 }
-            }
-            upData["availableSizes"] = availableSizes
-        }
-
+             }
+             let presentSize= product.availableSizes
+           
+        // //     console.log(x)
+           if(!(presentSize.includes(array))){
+           presentSize.push(...array)
+             }
+    
+           
+           
+            upData["availableSizes"]=presentSize
+        
+    }
         if ("installments" in updates) {
             if (!validator.isValid(installments)) {
                 return res.status(400).send({ status: false, msg: "installments is required" })
@@ -363,11 +391,11 @@ const updateProduct = async function(req, res) {
                 var updateImage = await uploadFile(files[0])
             }
 
-            updates.productImage = updateImage
+            upData.productImage = updateImage
         }
 
 
-        let productUpdated = await productModel.findOneAndUpdate({ _id: product_id, isDeleted: false }, { $set: updates }, { new: true })
+        let productUpdated = await productModel.findOneAndUpdate({ _id: product_id, isDeleted: false }, {$set:upData}, { new: true })
         res.status(200).send({ status: true, message: "Product updated", date: productUpdated })
 
 

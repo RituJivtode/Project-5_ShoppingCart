@@ -41,4 +41,9 @@ module.exports.isValid = isValid;
 
 module.exports.validInstallment = validInstallment;
 module.exports.isValidRequestBody= isValidRequestBody
+<<<<<<< HEAD
  
+=======
+
+
+>>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
