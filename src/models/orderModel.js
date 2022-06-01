@@ -18,8 +18,8 @@ const orderSchema = new mongoose.Schema({
 
       quantity: {
           type:Number,
-           required:true,
-            min :1
+           required:true
+            
         }
     }],
 
@@ -36,7 +36,7 @@ const orderSchema = new mongoose.Schema({
     totalQuantity: {
         type:Number,
          required:true},
-         
+
          //comment: "Holds total number of quantity in the cart"},
 
     cancellable: {type:Boolean, default: true},

@@ -4,7 +4,7 @@ const productModel = require('../models/productModel');
 const orderModel = require('../models/orderModel');
 const validator = require('../middleware/validation')
 const mongoose = require("mongoose")
- 
+
 
 
 const isValidObjectId = function (objectId) {
@@ -13,103 +13,32 @@ const isValidObjectId = function (objectId) {
 
 
 const createOrder = async function (req, res) {
-
-    // body = req.body;
-    // userid = req.params.userId;
-
-    // if (!isValidObjectId(userid)) {
-    //     return res.status(400).send({ status: false, msg: 'userid not valid' })
-    // }
-    // let checkuser = await userModel.findOne({ _id: userid })
-    // if (!checkuser) {
-    //     return res.status(404).send({ status: false, msg: "user not found" })
-    // }
-
-    // const { items, status, cancellable } = body
-
-    // // let checkProduct = await productModel.findOne({ _id: $.items.productId })
-    // // if (!checkProduct) {
-    // //     return res.status(404).send({ status: false, msg: "product not found" })
-    // // }
-    // let checkCart = await cartModel.findOne({ userId:userid })
-    // if (!checkCart) {
-    //     return res.status(404).send({ status: false, msg: "cart does not belong to that user" })
-    // }
-    // if (cancellable) {
-    //     if (typeof cancellable != "boolean") {
-    //         return res.status(400).send({ status: false, message: 'Cancellable must be boolean' });
-    //     }
-    // }
-
-    // if (status) {
-    //     if (!validator.isValidStatus(status)) {
-    //         return res.status(400).send({ status: false, message: `Status must be among ['pending','completed','cancelled'].` });
-    //     }
-    // }
-    // // if (!checkCart.items.length) {
-    // //     return res.status(202).send({ status: false, message: `Order already placed Please add some products in cart to make an order.` });
-    // // }                         
-    // //adding quantity of every products
-    // const reducer = (previousValue, currentValue) => previousValue + currentValue;
-    // let totalQuantity = checkCart.items.map((x) => x.quantity).reduce(reducer);
-
-    // const orderDetails = {
-    //     userId: userId,
-    //     items: checkCart.items,
-    //     totalPrice: checkCart.totalPrice,
-    //     totalItems: checkCart.totalItems,
-    //     totalQuantity: totalQuantity,
-    //     cancellable,
-    //     status,
-    // };
-    // const savedOrder = await orderModel.create(orderDetails);
-
-    // //Empty the cart after the successfull order
-    // await cartModel.findOneAndUpdate({ _id: cartId, userId: userId }, {
-    //     $set: {
-    //         items: [],
-    //         totalPrice: 0,
-    //         totalItems: 0,
-    //     },
-    // });
-    // return res.status(200).send({ status: true, message: "Order placed.", data: savedOrder });
-
-
-
     try {
-        const userId = req.params.userId;
-        const requestBody = req.body;
 
-        if (!validator.isValidRequestBody(requestBody)) {
-            return res.status(400).send({ status: false, message: "Invalid request body. Please provide the the input to proceed." });
+        body = req.body;
+        userid = req.params.userId;
+
+        if (Object.keys(body).length === 0) {
+            return res.status(400).send({ status: false, msg: " sorry body can't be empty " })
         }
-        //Extract parameters
-        const { cartId, cancellable, status } = requestBody;
+        const { cartId, status, cancellable } = body
 
-        if (!isValidObjectId(userId)) {
-            return res.status(400).send({ status: false, message: "Invalid userId in params." });
-        }
-
-        const searchUser = await userModel.findOne({ _id: userId });
-        if (!searchUser) {
-            return res.status(400).send({ status: false, message: `user doesn't exists for ${userId}` });
+        if (!isValidObjectId(cartId)) {
+            return res.status(400).send({ status: false, message: "cart id must be present " });
         }
 
-        if (!cartId) {
-            return res.status(400).send({ status: false, message: `Cart doesn't exists for ${userId}` });
+        let checkCart = await cartModel.findOne({ _id: cartId })
+        if (!checkCart) {
+            return res.status(404).send({ status: false, msg: "cart does not exist" })
         }
-        if (! isValidObjectId(cartId)) {
-            return res.status(400).send({ status: false, message: `Invalid cartId in request body.` });
-        }
-        const searchCartDetails = await cartModel.findOne({ _id: cartId, userId: userId });
-
-        if (!searchCartDetails) {
-            return res.status(400).send({ status: false, message: `Cart doesn't belongs to ${userId}` });
+        let checkUserCart = await cartModel.findOne({ _id: cartId, userId: userid })
+        if (!checkUserCart) {
+            return res.status(404).send({ status: false, msg: "cart does not belong to that user" })
         }
 
         if (cancellable) {
             if (typeof cancellable != "boolean") {
-                return res.status(400).send({ status: false, message: `Cancellable must be either 'true' or 'false'.` });
+                return res.status(400).send({ status: false, message: 'Cancellable must be boolean' });
             }
         }
 
@@ -118,84 +47,37 @@ const createOrder = async function (req, res) {
                 return res.status(400).send({ status: false, message: `Status must be among ['pending','completed','cancelled'].` });
             }
         }
-        // if (!searchCartDetails.items.length) {
-        //     return res.status(202).send({ status: false, message: `Order already placed for this cart. Please add some products in cart to make an order.` });
-        // }
-        //adding quantity of every products
-        const reducer = (previousValue, currentValue) => previousValue + currentValue;
-        let totalQuantity = searchCartDetails.items.map((x) => x.quantity).reduce(reducer);
+        if (checkUserCart.items.length == 0) {
+            return res.status(202).send({ status: false, message: "cart have no items" });
+        }
+        if (checkCart.items.length > 0) {
+            let sum = 0;
+            for (let i = 0; i < checkUserCart.items.length; i++) {
+                sum = + checkCart.items[i].quantity
+            }
 
-        const orderDetails = {
-            userId: userId,
-            items: searchCartDetails.items,
-            totalPrice: searchCartDetails.totalPrice,
-            totalItems: searchCartDetails.totalItems,
-            totalQuantity: totalQuantity,
-            cancellable,
-            status,
-        };
-        const savedOrder = await orderModel.create(orderDetails);
+        }
+ 
 
-        //Empty the cart after the successfull order
-        await cartModel.findOneAndUpdate({ _id: cartId, userId: userId }, {
-            $set: {
-                items: [],
-                totalPrice: 0,
-                totalItems: 0,
-            },
-        });
-        return res.status(200).send({ status: true, message: "Order placed.", data: savedOrder });
-    } catch (err) {
-        return res.status(500).send({ status: false, message: err.message });
+
+        body.totalItems = checkUserwithCart.totalItems
+        body.items = checkUserwithCart.items
+        body.totalPrice = checkUserwithCart.totalPrice
+        body.userId=req.params.userId
+
+        let createOrder = await orderModel.create(body)
+
+        let findCreatedOrder = await orderModel.findById({ _id: createOrder._id }).select({ "__v": 0 })
+
+        return res.status(201).send({ status: true, message: "Success", data: findCreatedOrder })
+
+    }
+    catch (err) {
+        return res.status(500).send({ Status: false, message: err.message })
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
+//============================================================ update ==================================================
 
 
 const updateOrder = async function (req, res) {
@@ -213,7 +95,7 @@ const updateOrder = async function (req, res) {
             return res.status(404).send({ status: false, message: "user not found" })
         }
 
-        
+
         if (object.keys(requestBody).length === 0) {
             return res.status(400).send({ status: false, message: "fill required value in body" })
         }
@@ -228,9 +110,9 @@ const updateOrder = async function (req, res) {
 
         }
 
-        let orderPresent = await orderModel.findOne({_id:orderId, userId:userId, isDeleted:false})
+        let orderPresent = await orderModel.findOne({ _id: orderId, userId: userId, isDeleted: false })
 
-        if(!orderPresent){
+        if (!orderPresent) {
             return res.status(404).send({ status: false, message: "Order not found " })
         }
 
@@ -261,7 +143,7 @@ const updateOrder = async function (req, res) {
 }
 
 
-module.exports  = { createOrder, updateOrder}
+module.exports = { createOrder, updateOrder }
 
 
 // if (!items.quantity) {

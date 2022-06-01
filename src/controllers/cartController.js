@@ -9,74 +9,84 @@ const validator = require('../middleware/validation')
 const isValidObjectId = function (objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
 }
+ 
+let digitRegex = /^[1-9]{1}[0-9]{0,10000}$/
+
+let removeProductRegex = /^[0-1]{1}$/
 
 
-const createCart = async function (req, res) {
+//------------------------------------------------------validations ends here------------------------------------------------------//
+
+
+const createCart = async (req, res) => {
     try {
-        let data = req.body
-        const { items } = data
 
-        let userId = req.params.userId
-        if (!isValidObjectId(userId)) {
-            return res.status(400).send({ status: false, msg: ` this ${userId} is invalid userId` })
-        }
-        let user = await userModel.findOne({ _id: userId, isDeleted: false })
-        if (!user) {
-            return res.status(404).send({ status: false, msg: "user  not found " })
+        const data = req.body
+        const userIdbyParams = req.params.userId
+
+        let { productId, quantity, cartId } = data
+
+        if (Object.keys(data).length === 0) {
+            return res.status(400).send({ status: false, messsage: "Please enter some data" })
         }
 
-        // const tokenUserId = req["userId"]
-        // console.log(tokenUserId)
-        // if (tokenUserId != user._id) {
-        //     return res.status(403).send({ status: false, msg: " not authorized" })
-        // }
-
-        if (!validator.isValid(data.productId)) {
-            return res.status(400).send({ status: false, msg: 'productId must be present' })
-        }
-        let productId = await productModel.findOne({ _id: data.productId, isDeleted: false })
-        if (!productId) {
-            return res.status(404).send({ status: false, msg: 'product not found' })
-        }
-        console.log(productId)
-        if (!data.quantity) {
-            return res.status(400).send({ status: false, msg: "iteams Quentity must be present more than 1" })
-        }
-        if (!validator.validInstallment(data.quantity)) {
-            return res.status(400).send({ status: false, msg: "iteams Quentity must be valid or >= 1" })
+        if (!isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, messsage: "plzz enter valid productId" })
         }
 
+        const isProductPresent = await productModel.findOne({ _id: productId, isDeleted: false })
 
-    //    if (items) {
-    //         let checkQuentity = await cartModel.findOne(items.quantity)
-
-    //         console.log(checkQuentity)
-    //         if (checkQuentity != 0) {
-    //             let r = await cartModel.findOneAndUpdate({ $inc: { checkQuentity: 1 } })
-    //         }
-
-        //     let quantity = 1
-
-            data.items = [{ productId: data.productId, quantity: data.quantity }]
-
-            data.userId = user._id
-            data.totalPrice = (productId.price) * (productId.items)
-            data.totalItems = 1;
-
-            let addingCart = await cartModel.findOneAndUpdate({ userId: user._id }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "_v": 0 })
-
-            if (addingCart) {
-                return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
+        if (!isProductPresent) {
+            return res.status(404).send({ status: false, messsage: `product not found by this prodct id ${productId}` })
+        }
+        if(quantity === ""){
+            return res.status(400).send({ status: false, messsage: "plzz enter valid quatity , please use digit" })
+        }
+        if(!quantity){
+             quantity=1
+        }
+        if (quantity) {
+            if (!digitRegex.test(quantity)) {
+                return res.status(400).send({ status: false, messsage: "plzz enter valid quatity" })
             }
-        
-        let cartCreate = await cartModel.create(data)
-        res.status(201).send({ status: true, data: cartCreate })
+        }
 
-    }
-    catch (err) {
-        res.status(500).send({ status: true, msg: err.message })
-    }
+       
+        if (typeof quantity === "string") {
+            return res.status(400).send({ status: false, messsage: "plzz enter quantity in Number not as an including string" })
+        }
 
+        data.userId = userIdbyParams
+
+        data.items = [{ productId: isProductPresent._id, quantity: quantity }]
+
+        data.totalPrice = (isProductPresent.price) * quantity
+
+        data.totalItems = data.items.length
+
+      
+        //----------------------------------------------------------------------------------------------------------//
+
+        let addingCart = await cartModel.findOneAndUpdate({ userId: userIdbyParams }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "__v": 0 })
+
+        if (addingCart) {
+            return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
+        }
+
+        //-------------------let's create a cart  ---------------------------------------------------------//
+
+        let createCart = await cartModel.create(data)
+        return res.status(201).send({ status: true, message: "cart  created successfullly", data: createCart })
+
+        //------------this line is being use to remove _V:0   ---------------------------------------------//
+
+        // let findData = await cartModel.findOne({ _id: createCart._id }).select({ "__v": 0 })
+
+        // return res.status(201).send({ status: true, message: "cart added", data: findData })
+
+    } catch (err) {
+        return res.status(500).send({ Status: false, message: err.message })
+    }
 }
 
 //========================================================get cart======================***
@@ -264,6 +274,5 @@ const deleteCart = async function (req, res) {
         res.status(500).send({ status: false, msg: err.message })
     }
 }
-
 
 module.exports = { createCart, getCart, deleteCart, cartUpdate }

@@ -1,49 +1,13 @@
-const aws = require('aws-sdk')
-const { AppConfig } = require('aws-sdk');
+const aws = require("../middleware/aws")
 const validator = require("../middleware/validation")
 const mongoose = require('mongoose')
 const productModel = require('../models/productModel')
-
 const isValidObjectId = function(objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
 }
 
-
-
 //==============================================-: CREATE PRODUCT:-================================================================
 
-
-aws.config.update({
-    accessKeyId: "AKIAY3L35MCRUJ6WPO6J",
-    secretAccessKey: "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",
-    region: "ap-south-1"
-})
-
-let uploadFile = async(file) => {
-    return new Promise(function(resolve, reject) {
-        // this function will upload file to aws and return the link
-        let s3 = new aws.S3({ apiVersion: '2006-03-01' }); // we will be using the s3 service of aws
-
-        var uploadParams = {
-            ACL: "public-read", //public access
-            Bucket: "classroom-training-bucket", //HERE
-            Key: "abc/" + file.originalname, //HERE 
-            Body: file.buffer
-        }
-
-
-        s3.upload(uploadParams, function(err, body) {
-            if (err) {
-                console.log(err)
-                return reject({ "error": err })
-            }
-            console.log(body)
-            console.log("file uploaded succesfully")
-            return resolve(body.Location)
-        })
-
-    })
-}
 
 
 const createProduct = async function(req, res) {
@@ -92,7 +56,7 @@ const createProduct = async function(req, res) {
 
         if (files && files.length > 0) {
             //upload filse in aws s3
-            var updateImage = await uploadFile(files[0]);
+            var updateImage = await aws.uploadFile(files[0]);
             console.log(updateImage)
         } else {
             return res.status(400).send({ msg: "No file found" })
@@ -371,7 +335,7 @@ const updateProduct = async function(req, res) {
                 return res.status(400).send({ msg: "No files found" })
 
             } else {
-                var updateImage = await uploadFile(files[0])
+                var updateImage = await aws.uploadFile(files[0])
             }
 
             upData.productImage = updateImage
