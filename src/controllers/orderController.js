@@ -109,7 +109,7 @@ const updateOrder = async function (req, res) {
             return res.status(400).send({ status: false, message: "provide Valid userId" })
         }
 
-        let userExist = await userModel.findOne({ userId: userId })
+        let userExist = await userModel.findOne({ _id: userId })
         if (!userExist) {
             return res.status(404).send({ status: false, message: "user not found" })
         }
