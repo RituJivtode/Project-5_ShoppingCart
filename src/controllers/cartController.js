@@ -39,13 +39,6 @@ const {items}= data
             return res.status(404).send({ status: false, msg: 'product not found' })
         }
 
-        // if (!data.quantity) {
-        //     return res.status(400).send({ status: false, msg: "iteams Quentity must be present more than 1" })
-        // }
-        // if (!validator.validInstallment(data.quantity)) {
-        //     return res.status(400).send({ status: false, msg: "iteams Quentity must be valid or >= 1" })
-        // }
-
          
              if(items){
  let checkQuentity = await cartModel.findOne(items.quantity)

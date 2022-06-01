@@ -32,18 +32,11 @@ const isValidRequestBody = function (requestBody) {
     return Object.keys(requestBody).length > 0
 }
 
-// const isValidQuantity = function(value){
-   
-// }
 
 module.exports.isValidTotal = isValidTotal;
 module.exports.isValid = isValid;
 
 module.exports.validInstallment = validInstallment;
 module.exports.isValidRequestBody= isValidRequestBody
-<<<<<<< HEAD
- 
-=======
 
 
->>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
