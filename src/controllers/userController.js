@@ -290,9 +290,10 @@ const updateUser = async function(req, res) {
         let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
 
         let { fname, lname, email, phone, password, address } = requestBody
+        
 
         let filterBody = {};
-        let value = await userModel.findOne({ _id: user_id })
+        // let value = await userModel.findOne({ _id: user_id })
 
         //========================================================================
         if (req.files == undefined) {

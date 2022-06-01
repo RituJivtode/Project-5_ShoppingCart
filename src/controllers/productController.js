@@ -173,6 +173,7 @@ const productByQuery = async function(req, res) {
                     return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
                 }
             }
+            //$addtoset
 
             queryParams["availableSizes"] = { $regex: size }
         }
@@ -290,14 +291,14 @@ const updateProduct = async function(req, res) {
             if (!validator.isValid(title)) {
                 return res.status(400).send({ status: false, msg: "title is required" })
             }
-            upData["title"] = title
-
+        
             //check uniqueness of product title
             const uniqueTitle = await productModel.findOne({ title: title });
 
             if (uniqueTitle) {
                 return res.status(400).send({ status: false, message: `${title} already exist` });
             }
+            upData["title"] = title
 
         }
 
@@ -321,7 +322,7 @@ const updateProduct = async function(req, res) {
             }
             upData["currencyId"] = currencyId
         }
-        upData["currencyId"] = currencyId
+    
         if ("currencyFormat" in updates) {
             if (!validator.isValid(currencyFormat)) {
                 return res.status(400).send({ status: false, msg: "currencyFormat is required" })
@@ -348,15 +349,24 @@ const updateProduct = async function(req, res) {
         if ("availableSizes" in updates) {
 
             let array = availableSizes.split(",").map(x => x.trim())
-            console.log(array)
+            
             for (let i = 0; i < array.length; i++) {
                 if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
                     return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
                 }
-            }
-            upData["availableSizes"] = availableSizes
-        }
-
+             }
+             let presentSize= product.availableSizes
+           
+        // //     console.log(x)
+           if(!(presentSize.includes(array))){
+           presentSize.push(...array)
+             }
+    
+           
+           
+            upData["availableSizes"]=presentSize
+        
+    }
         if ("installments" in updates) {
             if (!validator.isValid(installments)) {
                 return res.status(400).send({ status: false, msg: "installments is required" })
@@ -380,11 +390,11 @@ const updateProduct = async function(req, res) {
                 var updateImage = await uploadFile(files[0])
             }
 
-            updates.productImage = updateImage
+            upData.productImage = updateImage
         }
 
 
-        let productUpdated = await productModel.findOneAndUpdate({ _id: product_id, isDeleted: false }, { $set: updates }, { new: true })
+        let productUpdated = await productModel.findOneAndUpdate({ _id: product_id, isDeleted: false }, {$set:upData}, { new: true })
         res.status(200).send({ status: true, message: "Product updated", date: productUpdated })
 
 
