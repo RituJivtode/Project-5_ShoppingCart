@@ -50,19 +50,19 @@ const createOrder = async function (req, res) {
         if (checkUserCart.items.length == 0) {
             return res.status(202).send({ status: false, message: "cart have no items" });
         }
-        if (checkCart.items.length > 0) {
+        if (checkUserCart.items.length > 0) {
             let sum = 0;
             for (let i = 0; i < checkUserCart.items.length; i++) {
-                sum = + checkCart.items[i].quantity
+                sum = + checkUserCart.items[i].quantity
             }
 
         }
  
 
 
-        body.totalItems = checkUserwithCart.totalItems
-        body.items = checkUserwithCart.items
-        body.totalPrice = checkUserwithCart.totalPrice
+        body.totalItems = checkUserCart.totalItems
+        body.items = checkUserCart.items
+        body.totalPrice = checkUserCart.totalPrice
         body.userId=req.params.userId
 
         let createOrder = await orderModel.create(body)
@@ -96,7 +96,7 @@ const updateOrder = async function (req, res) {
         }
 
 
-        if (object.keys(requestBody).length === 0) {
+        if (Object.keys(requestBody).length === 0) {
             return res.status(400).send({ status: false, message: "fill required value in body" })
         }
 
@@ -105,7 +105,7 @@ const updateOrder = async function (req, res) {
                 return res.status(400).send({ status: false, message: "provide orderId in request body" })
             }
             if (!isValidObjectId(orderId)) {
-                return res.status(400).send({ status: false, message: "provide Valid cartId in request body" })
+                return res.status(400).send({ status: false, message: "provide Valid orderId in request body" })
             }
 
         }
@@ -118,14 +118,14 @@ const updateOrder = async function (req, res) {
 
         if (!status) {
             if (!validator.isValid(status)) {
-                return res.status(400).send({ status: false, message: "provide cartId in request body" })
+                return res.status(400).send({ status: false, message: "provide status in request body" })
             }
         }
 
-        if (status == pending) {
+        if (orderPresent.status == "pending") {
             return res.status(400).send({ status: false, message: "status can not be pending" })
         }
-        if (status == cancled) {
+        if (orderPresent.status == "cancled") {
             if (orderPresent.cancellable === false) {
                 return res.status(400).send({ status: false, message: "order Can not be cancelled" })
             }
@@ -145,16 +145,4 @@ const updateOrder = async function (req, res) {
 
 module.exports = { createOrder, updateOrder }
 
-
-// if (!items.quantity) {
-//     return res.status(404).send({ status: false, msg: "quantity must be present" })
-// }
-// if (!totalQuantity) {
-//     return res.status(404).send({ status: false, msg: "quantity must be present" })
-// }
-// if (!totalPrice) {
-//     return res.status(404).send({ status: false, msg: "price must be present" })
-// }
-// if (!tottalItems) {
-//     return res.status(404).send({ status: false, msg: "items must be present" })
-// }
+ 
