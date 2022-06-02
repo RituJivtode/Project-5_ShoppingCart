@@ -5,7 +5,7 @@ const productController = require("../controllers/productController")
 const cartController = require("../controllers/cartController")
 
 const mid = require("../middleware/authe")
-//=============================user==========================================
+    //=============================user==========================================
 
 router.post("/register", userController.createUser)
 
@@ -33,12 +33,8 @@ router.delete("/products/:productId", productController.deleteProduct)
 router.post("/users/:userId/cart", mid.authentication, cartController.createCart)
 
 router.get("/users/:userId/cart", mid.authentication, cartController.getCart)
-<<<<<<< HEAD
-router.put("users/:userId/cart", mid.authentication, mid.authorization, cartController.cartUpdate)
-=======
-router.put("/users/:userId/cart",cartController.cartUpdate)
->>>>>>> 06eb4e73d3ebd15250a57357fd33bfb6281ddaed
+router.put("/users/:userId/cart", cartController.cartUpdate)
 
-router.delete("/users/:userId/cart", mid.authentication,  mid.authorization, cartController.deleteCart)
+router.delete("/users/:userId/cart", mid.authentication, mid.authorization, cartController.deleteCart)
 
 module.exports = router;

@@ -39,13 +39,6 @@ const createCart = async function(req, res) {
             return res.status(404).send({ status: false, msg: 'product not found' })
         }
 
-        // if (!data.quantity) {
-        //     return res.status(400).send({ status: false, msg: "iteams Quentity must be present more than 1" })
-        // }
-        // if (!validator.validInstallment(data.quantity)) {
-        //     return res.status(400).send({ status: false, msg: "iteams Quentity must be valid or >= 1" })
-        // }
-
 
         if (items) {
             let checkQuentity = await cartModel.findOne(items.quantity)
@@ -57,20 +50,31 @@ const createCart = async function(req, res) {
 
             let quantity = 1
 
-            data.items = [{ productId: data.productId, quantity: quantity }]
+            if (items) {
+                let checkQuentity = await cartModel.findOne(items.quantity)
 
-            data.userId = user._id
-            data.totalPrice = (productId.price) * (r)
-            data.totalItems = 1;
+                console.log(checkQuentity)
+                if (checkQuentity != 0) {
+                    let r = await cartModel.findOneAndUpdate({ $inc: { checkQuentity: 1 } })
+                }
 
-            let addingCart = await cartModel.findOneAndUpdate({ userId: user._id }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "_v": 0 })
+                let quantity = 1
 
-            if (addingCart) {
-                return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
+                data.items = [{ productId: data.productId, quantity: quantity }]
+
+                data.userId = user._id
+                data.totalPrice = (productId.price) * (r)
+                data.totalItems = 1;
+
+                let addingCart = await cartModel.findOneAndUpdate({ userId: user._id }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "_v": 0 })
+
+                if (addingCart) {
+                    return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
+                }
             }
+            let cartCreate = await cartModel.create(data)
+            res.status(201).send({ status: true, data: cartCreate })
         }
-        let cartCreate = await cartModel.create(data)
-        res.status(201).send({ status: true, data: cartCreate })
 
     } catch (err) {
         res.status(500).send({ status: true, msg: err.message })

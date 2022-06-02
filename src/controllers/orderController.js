@@ -109,10 +109,12 @@ const updateOrder = async function(req, res) {
             return res.status(400).send({ status: false, message: "provide Valid userId" })
         }
 
-        let userExist = await cartModel.findOne({ userId: userId })
+        let userExist = await userModel.findOne({ _id: userId })
         if (!userExist) {
             return res.status(404).send({ status: false, message: "user not found" })
         }
+
+
         if (object.keys(requestBody).length === 0) {
             return res.status(400).send({ status: false, message: "fill required value in body" })
         }
@@ -127,6 +129,12 @@ const updateOrder = async function(req, res) {
 
         }
 
+        let orderPresent = await orderModel.findOne({ _id: orderId, userId: userId, isDeleted: false })
+
+        if (!orderPresent) {
+            return res.status(404).send({ status: false, message: "Order not found " })
+        }
+
         if (!status) {
             if (!validator.isValid(status)) {
                 return res.status(400).send({ status: false, message: "provide cartId in request body" })
@@ -137,7 +145,7 @@ const updateOrder = async function(req, res) {
             return res.status(400).send({ status: false, message: "status can not be pending" })
         }
         if (status == cancled) {
-            if (userExist.cancellable === false) {
+            if (orderPresent.cancellable === false) {
                 return res.status(400).send({ status: false, message: "order Can not be cancelled" })
             }
         }

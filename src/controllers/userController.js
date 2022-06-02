@@ -1,46 +1,11 @@
 const userModel = require("../models/userModel")
 const jwt = require("jsonwebtoken")
-const bcrypt = require("bcrypt")
-const aws = require("aws-sdk")
-const { AppConfig } = require('aws-sdk');
+const bcrypt = require("bcrypt");
 const validator = require("../middleware/validation")
+const aws = require("../middleware/aws")
 const mongoose = require("mongoose")
-
 const isValidObjectId = function(objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
-}
-
-
-aws.config.update({
-    accessKeyId: "AKIAY3L35MCRUJ6WPO6J",
-    secretAccessKey: "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",
-    region: "ap-south-1"
-})
-
-let uploadFile = async(file) => {
-    return new Promise(function(resolve, reject) {
-        // this function will upload file to aws and return the link
-        let s3 = new aws.S3({ apiVersion: '2006-03-01' }); // we will be using the s3 service of aws
-
-        var uploadParams = {
-            ACL: "public-read",
-            Bucket: "classroom-training-bucket", //HERE
-            Key: "abc/" + file.originalname, //HERE 
-            Body: file.buffer
-        }
-
-
-        s3.upload(uploadParams, function(err, body) {
-            if (err) {
-                console.log(err)
-                return reject({ "error": err })
-            }
-            console.log(body)
-            console.log("file uploaded succesfully")
-            return resolve(body.Location)
-        })
-
-    })
 }
 
 
@@ -49,20 +14,18 @@ const createUser = async function(req, res) {
 
         let body = req.body
         let files = req.files
+        if (Object.keys(body).length === 0 && req.files == undefined) {
+            return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
+        }
 
         if (!(files && files.length > 0)) {
 
-            return res.status(400).send({ msg: "No file found" })
+            return res.status(400).send({ status: false, message: "No file found" })
         }
-        var profilePicUrl = await uploadFile(files[0]);
+        let profilePicUrl = await uploadFile(files[0]);
 
         const { fname, lname, email, phone, password } = body
         // body.profileImage= profilePicUrl
-
-
-        if (Object.keys(body).length === 0) {
-            return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
-        }
 
         if (!validator.isValid(fname)) {
             return res.status(400).send({ status: false, msg: "fullname is required" })
@@ -121,7 +84,8 @@ const createUser = async function(req, res) {
 
         //---------------------------------------------- shipping address--------------------------------
 
-        let address = req.body.address
+        let addressData = req.body.address
+        address = JSON.parse(addressData)
 
         if (address.shipping) {
             if (address.shipping.street) {
@@ -139,7 +103,7 @@ const createUser = async function(req, res) {
                 return res.status(400).send({ status: false, message: "Shipping city cannot be empty" });
             }
             if (address.shipping.pincode) {
-                if (!validator.isValidRequestBody(address.shipping.pincode)) {
+                if (!validator.isValid(address.shipping.pincode)) {
                     return res.status(400).send({ status: false, message: 'Shipping pincode Required' });
                 }
             } else {
@@ -166,7 +130,7 @@ const createUser = async function(req, res) {
                 return res.status(400).send({ status: false, message: " billing city cannot be empty" });
             }
             if (address.billing.pincode) {
-                if (!validator.isValidRequestBody(address.billing.pincode)) {
+                if (!validator.isValid(address.billing.pincode)) {
                     return res.status(400).send({ status: false, message: ' billing pincode Required' });
                 }
             } else {
@@ -220,25 +184,25 @@ const login = async function(req, res) {
         //******------------------- checking User Detail -------------------****** //
 
 
-        let CheckUser = await userModel.findOne({ email: body.email });
+        let checkUser = await userModel.findOne({ email: body.email });
 
-        if (!CheckUser) {
+        if (!checkUser) {
             return res.status(400).send({ Status: false, message: "email is not correct" });
         }
 
-        let passwordMatch = await bcrypt.compare(body.password, CheckUser.password)
+        let passwordMatch = await bcrypt.compare(body.password, checkUser.password)
         if (!passwordMatch) {
             return res.status(400).send({ status: false, msg: "incorect password" })
         }
         //******------------------- generating token for user -------------------****** //
         let userToken = jwt.sign({
 
-            UserId: CheckUser._id,
+            UserId: checkUser._id,
             batch: "Uranium"
 
         }, 'FunctionUp Group21', { expiresIn: '86400s' }); // token expiry for 24hrs
 
-        return res.status(200).send({ status: true, message: "User login successfull", data: { UserId: CheckUser._id, token: userToken } });
+        return res.status(200).send({ status: true, message: "User login successfull", data: { userId: checkUser._id, token: userToken } });
     } catch (err) {
         res.status(500).send({ status: false, msg: err.message })
     }
@@ -284,34 +248,35 @@ const updateUser = async function(req, res) {
 
         let user_id = req.params.userId
         let files = req.files
+        console.log(req.files)
         let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
         let Phoneregex = /^[6-9]{1}[0-9]{9}$/
         let StreetRegex = /^[A-Za-z1-9]{1}[A-Za-z0-9/ ,]{5,}$/
         let PinCodeRegex = /^[1-9]{1}[0-9]{5}$/
 
         let { fname, lname, email, phone, password, address } = requestBody
-        
+
 
         let filterBody = {};
-        // let value = await userModel.findOne({ _id: user_id })
 
         //========================================================================
-        if (req.files == undefined) {
-            if (Object.keys(requestBody).length === 0) {
-                return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
-            }
+
+        if (Object.keys(requestBody).length === 0 && !files) {
+            return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
+
 
         //=========================================================================
         // if(req.body.length)
-        if (Object.keys(req.body).length === 0) {
-            if (req.files.length === 0) {
+        if (Object.keys(requestBody).length <= 0) {
+            if (files.length === 0) {
                 return res.status(400).send({ Status: false, message: "please select file" })
             }
         }
+
         if (files && files.length > 0) {
 
-            let profilePhotoUrl = await uploadFile(files[0]);
+            let profilePhotoUrl = await aws.uploadFile(files[0]);
             filterBody.profileImage = profilePhotoUrl
 
         }
@@ -386,12 +351,15 @@ const updateUser = async function(req, res) {
         }
 
         if ("address" in requestBody) {
-            address = JSON.stringify(address)
-            address = JSON.parse(address)
+            // address = JSON.stringify(address)
+            // address = JSON.parse(address)
 
-            if (!address || Object.keys(address).length == 0) return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
-                //  address = JSON.stringify(address)
-                //  address= JSON.parse(address)
+
+            if (!address || Object.keys(address).length === 0) {
+                return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
+            }
+            //  address = JSON.stringify(address)
+            address = JSON.parse(address)
             const { shipping, billing } = address
             if ("shipping" in address) {
                 const { street, city, pincode } = shipping
@@ -408,7 +376,11 @@ const updateUser = async function(req, res) {
                     filterBody["address.shipping.city"] = city
                 }
                 if ("pincode" in shipping) {
-                    if (!PinCodeRegex(pincode)) {
+                    if (!validator.isValid(pincode)) {
+                        return res.status(400).send({ status: false, message: "pincode is not valid" })
+                    }
+
+                    if (!PinCodeRegex.test(pincode)) {
                         return res.status(400).send({ status: false, message: "pincode is not valid" })
                     }
                     filterBody["address.shipping.pincode"] = pincode
@@ -431,8 +403,12 @@ const updateUser = async function(req, res) {
                     filterBody["address.billing.city"] = city
                 }
                 if ("pincode" in billing) {
-                    if (!PinCodeRegex(pincode)) {
-                        return res.status(400).send({ status: false, message: "pincode is not valid" })
+                    if (!validator.isValid(pincode)) {
+                        return res.status(400).send({ status: false, message: "shipping pincode is not valid" })
+                    }
+
+                    if (!PinCodeRegex.test(pincode)) {
+                        return res.status(400).send({ status: false, message: "billing pincode is not valid" })
                     }
                     filterBody["address.billing.pincode"] = pincode
                 }
