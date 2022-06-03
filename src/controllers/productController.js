@@ -15,7 +15,7 @@ const createProduct = async function(req, res) {
 
         let reqBody = req.body
             //req body check
-        if (Object.keys(reqBody).length === 0) {
+        if (Object.keys(reqBody).length === 0 && req.files == undefined) {
 
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
@@ -47,10 +47,20 @@ const createProduct = async function(req, res) {
         }
         //currency must be 'INR'
         if (currencyId !== 'INR') return res.status(400).send({ status: false, msg: "currencyId should be 'INR'" })
+        if ("currencyFormat" in reqBody) {
+            if (!validator.isValid(currencyFormat)) {
+                return res.status(400).send({ status: false, msg: "currencyFormat is required" })
+            }
+            if (!(currencyFormat == "₹")) {
+                return res.status(400).send({ status: false, msg: "currencyFormat is wrong" })
+            }
+            reqBody["currencyFormat"] = currencyFormat
 
-        if (!validator.isValid(currencyFormat)) {
-            return res.status(400).send({ status: false, msg: "currencyFormat is required" })
         }
+
+        let rupeesSymbol = "₹"
+        reqBody.currencyFormat = rupeesSymbol
+
         //geting the file 
         let files = req.files
 
@@ -119,7 +129,7 @@ const getProduct = async function(req, res) {
 
 }
 
-//=============================================================================================================
+//==================================================== GET productByQuery =========================================================
 
 const productByQuery = async function(req, res) {
     try {
@@ -224,6 +234,7 @@ const productByQuery = async function(req, res) {
 }
 
 // ==============================================================================================================
+
 const updateProduct = async function(req, res) {
     try {
 
@@ -285,6 +296,9 @@ const updateProduct = async function(req, res) {
             if (!validator.isValid(currencyId)) {
                 return res.status(400).send({ status: false, msg: "currencyId is required" })
             }
+            if (currencyId != "INR") {
+                return res.status(400).send({ status: false, message: "currencyId should be INR" })
+            }
             upData["currencyId"] = currencyId
         }
 
@@ -292,15 +306,22 @@ const updateProduct = async function(req, res) {
             if (!validator.isValid(currencyFormat)) {
                 return res.status(400).send({ status: false, msg: "currencyFormat is required" })
             }
-
-
+            if (!(currencyFormat == "₹")) {
+                return res.status(400).send({ status: false, msg: "currencyFormat is wrong" })
+            }
             upData["currencyFormat"] = currencyFormat
+
         }
-        let a = "₹"
-        upData["currencyFormat"] = a
+
+        let rupeesSymbol = "₹"
+        upData.currencyFormat = rupeesSymbol
         if ("isFreeShipping" in updates) {
             if (!validator.isValid(isFreeShipping)) {
                 return res.status(400).send({ status: false, msg: "isFreeShipping is required" })
+            }
+
+            if (!["true", "false"].includes(isFreeShipping)) {
+                return res.status(400).send({ status: false, message: "isFreeShipping must be a boolean value" })
             }
             upData["isFreeShipping"] = isFreeShipping
         }
@@ -345,21 +366,19 @@ const updateProduct = async function(req, res) {
 
 
         let files = req.files
-        if (Object.keys(req.body).length === 0) {
+        if (Object.keys(req.body).length == 0) {
             if (req.files.length == 0 && req.files != undefined) {
                 return res.status(400).send({ status: false, msg: "Please select file" })
             }
         }
-        if (req.files.length > 0) {
-            if (!(files && files.length > 0)) {
-                return res.status(400).send({ msg: "No files found" })
 
-            } else {
-                var updateImage = await aws.uploadFile(files[0])
-            }
+        if (files && files.length !== 0) {
 
-            upData.productImage = updateImage
+            var updateImage = await aws.uploadFile(files[0])
         }
+
+        upData.productImage = updateImage
+
 
 
         let productUpdated = await productModel.findOneAndUpdate({ _id: product_id, isDeleted: false }, { $set: upData }, { new: true })

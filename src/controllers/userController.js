@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt");
 const validator = require("../middleware/validation")
 const aws = require("../middleware/aws")
+const {uploadFile} = require("../middleware/aws")
 const mongoose = require("mongoose")
 const isValidObjectId = function(objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
@@ -84,8 +85,13 @@ const createUser = async function(req, res) {
 
         //---------------------------------------------- shipping address--------------------------------
 
-        let addressData = req.body.address
-        address = JSON.parse(addressData)
+        let address = req.body.address
+
+        if (!address || Object.keys(address).length === 0) {
+            return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
+        }
+        address = JSON.parse(address)
+       
 
         if (address.shipping) {
             if (address.shipping.street) {
@@ -187,12 +193,12 @@ const login = async function(req, res) {
         let checkUser = await userModel.findOne({ email: body.email });
 
         if (!checkUser) {
-            return res.status(400).send({ Status: false, message: "email is not correct" });
+            return res.status(401).send({ Status: false, message: "email is not correct" });
         }
 
         let passwordMatch = await bcrypt.compare(body.password, checkUser.password)
         if (!passwordMatch) {
-            return res.status(400).send({ status: false, msg: "incorect password" })
+            return res.status(401).send({ status: false, msg: "incorect password" })
         }
         //******------------------- generating token for user -------------------****** //
         let userToken = jwt.sign({
@@ -230,7 +236,7 @@ const getUser = async function(req, res) {
             return res.status(404).send({ status: false, message: "user not found" });
         }
         //return user in response
-        return res.status(200).send({ status: true, data: user });
+        return res.status(200).send({ status: true,message:"Success" ,data: user });
 
 
     } catch (error) {
