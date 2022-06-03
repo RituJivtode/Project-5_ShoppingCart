@@ -193,12 +193,12 @@ const login = async function(req, res) {
         let checkUser = await userModel.findOne({ email: body.email });
 
         if (!checkUser) {
-            return res.status(400).send({ Status: false, message: "email is not correct" });
+            return res.status(401).send({ Status: false, message: "email is not correct" });
         }
 
         let passwordMatch = await bcrypt.compare(body.password, checkUser.password)
         if (!passwordMatch) {
-            return res.status(400).send({ status: false, msg: "incorect password" })
+            return res.status(401).send({ status: false, msg: "incorect password" })
         }
         //******------------------- generating token for user -------------------****** //
         let userToken = jwt.sign({

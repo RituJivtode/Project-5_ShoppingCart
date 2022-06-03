@@ -71,6 +71,8 @@ const createOrder = async function (req, res) {
         // }
 
         // body["totalQuantity"] = quantityValue
+
+      
         console.log(body.totalQuantity)
 
         let quantityValue=0;
