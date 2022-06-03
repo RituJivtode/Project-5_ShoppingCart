@@ -130,6 +130,8 @@ const productByQuery = async function(req, res) {
         queryParams = {};
         if ("size" in req.query) {
 
+             
+            //$addtoset
             let array = availableSizes.split(",").map(x => x.trim())
                 // console.log(array)
             for (let i = 0; i < array.length; i++) {

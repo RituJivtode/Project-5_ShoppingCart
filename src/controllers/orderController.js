@@ -2,10 +2,9 @@ const cartModel = require('../models/cartModel');
 const userModel = require('../models/userModel');
 const productModel = require('../models/productModel');
 const orderModel = require('../models/orderModel');
-
-// const { default: mongoose } = require('mongoose');
-const mongoose = require("mongoose")
 const validator = require('../middleware/validation')
+const mongoose = require("mongoose")
+
 
 
 const isValidObjectId = function(objectId) {
@@ -14,89 +13,70 @@ const isValidObjectId = function(objectId) {
 
 
 const createOrder = async function(req, res) {
+    try {
 
-    body = req.body;
-    userid = req.params.userId;
+        body = req.body;
+        userid = req.params.userId;
 
-    if (!isValidObjectId(userid)) {
-        return res.status(400).send({ status: false, msg: 'userid not valid' })
-    }
-    let checkuser = await orderModel.findOne({ userId: userid })
-    if (!checkuser) {
-        return res.status(404).send({ status: false, msg: "user not found" })
-    }
+        if (Object.keys(body).length === 0) {
+            return res.status(400).send({ status: false, msg: " sorry body can't be empty " })
+        }
+        const { cartId, status, cancellable } = body
 
-    const { items, totalPrice, tottalItems, statusbar, totalQuantity, cancellable } = body
+        if (!isValidObjectId(cartId)) {
+            return res.status(400).send({ status: false, message: "cart id must be present " });
+        }
 
-    let checkProduct = await productModel.findOne({ _id: $.items.productId })
-    if (!checkProduct) {
-        return res.status(404).send({ status: false, msg: "product not found" })
-    }
-    let checkCart = await cartModel.findOne({ _id: data.cartId })
-    if (!checkCart) {
-        return res.status(404).send({ status: false, msg: "cart not found" })
-    }
-    if (!items.quantity) {
-        return res.status(404).send({ status: false, msg: "quantity must be present" })
-    }
-    if (!totalQuantity) {
-        return res.status(404).send({ status: false, msg: "quantity must be present" })
-    }
-    if (!totalPrice) {
-        return res.status(404).send({ status: false, msg: "price must be present" })
-    }
-    if (!tottalItems) {
-        return res.status(404).send({ status: false, msg: "items must be present" })
-    }
+        let checkCart = await cartModel.findOne({ _id: cartId })
+        if (!checkCart) {
+            return res.status(404).send({ status: false, msg: "cart does not exist" })
+        }
+        let checkUserCart = await cartModel.findOne({ _id: cartId, userId: userid })
+        if (!checkUserCart) {
+            return res.status(404).send({ status: false, msg: "cart does not belong to that user" })
+        }
 
+        if (cancellable) {
+            if (typeof cancellable != "boolean") {
+                return res.status(400).send({ status: false, message: 'Cancellable must be boolean' });
+            }
+        }
+
+        if (status) {
+            if (!validator.isValidStatus(status)) {
+                return res.status(400).send({ status: false, message: `Status must be among ['pending','completed','cancelled'].` });
+            }
+        }
+        if (checkUserCart.items.length == 0) {
+            return res.status(202).send({ status: false, message: "cart have no items" });
+        }
+        if (checkUserCart.items.length > 0) {
+            let sum = 0;
+            for (let i = 0; i < checkUserCart.items.length; i++) {
+                sum = +checkUserCart.items[i].quantity
+            }
+
+        }
+
+
+
+        body.totalItems = checkUserCart.totalItems
+        body.items = checkUserCart.items
+        body.totalPrice = checkUserCart.totalPrice
+        body.userId = req.params.userId
+
+        let createOrder = await orderModel.create(body)
+
+        let findCreatedOrder = await orderModel.findById({ _id: createOrder._id }).select({ "__v": 0 })
+
+        return res.status(201).send({ status: true, message: "Success", data: findCreatedOrder })
+
+    } catch (err) {
+        return res.status(500).send({ Status: false, message: err.message })
+    }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//============================================================ update ==================================================
 
 
 const updateOrder = async function(req, res) {
@@ -115,7 +95,7 @@ const updateOrder = async function(req, res) {
         }
 
 
-        if (object.keys(requestBody).length === 0) {
+        if (Object.keys(requestBody).length === 0) {
             return res.status(400).send({ status: false, message: "fill required value in body" })
         }
 
@@ -124,7 +104,7 @@ const updateOrder = async function(req, res) {
                 return res.status(400).send({ status: false, message: "provide orderId in request body" })
             }
             if (!isValidObjectId(orderId)) {
-                return res.status(400).send({ status: false, message: "provide Valid cartId in request body" })
+                return res.status(400).send({ status: false, message: "provide Valid orderId in request body" })
             }
 
         }
@@ -137,14 +117,14 @@ const updateOrder = async function(req, res) {
 
         if (!status) {
             if (!validator.isValid(status)) {
-                return res.status(400).send({ status: false, message: "provide cartId in request body" })
+                return res.status(400).send({ status: false, message: "provide status in request body" })
             }
         }
 
-        if (status == pending) {
+        if (orderPresent.status == "pending") {
             return res.status(400).send({ status: false, message: "status can not be pending" })
         }
-        if (status == cancled) {
+        if (orderPresent.status == "cancled") {
             if (orderPresent.cancellable === false) {
                 return res.status(400).send({ status: false, message: "order Can not be cancelled" })
             }
@@ -160,4 +140,4 @@ const updateOrder = async function(req, res) {
 }
 
 
-module.exports.updateOrder = updateOrder
+module.exports = { createOrder, updateOrder }

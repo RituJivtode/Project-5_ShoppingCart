@@ -31,12 +31,22 @@ const validInstallment = function isInteger(value) {
 const isValidRequestBody = function (requestBody) {
     return Object.keys(requestBody).length > 0
 }
+const validQuantity = function isInteger(value) {
+    if(value < 1) return false
+     if(value % 1 == 0 ) return true
+}
+
+const isValidStatus = function(status) {
+    return ['pending', 'completed', 'cancelled'].indexOf(status) !== -1
+}
+
 
 
 module.exports.isValidTotal = isValidTotal;
-module.exports.isValid = isValid;
+module.exports = {isValid, isValidStatus,validQuantity}
 
 module.exports.validInstallment = validInstallment;
+module.exports.isValidRequestBody= isValidRequestBody 
 module.exports.isValidRequestBody= isValidRequestBody
 
 
