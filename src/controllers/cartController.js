@@ -104,10 +104,10 @@ const createCart = async (req, res) => {
 
         //----------------------------------------------------------------------------------------------------------//
 
-        let addingCart = await cartModel.findOneAndUpdate({ userId: userIdbyParams }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "__v": 0 })
+        let addingCart = await cartModel.findOneAndUpdate({ userId: userIdbyParams }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true })
 
         if (addingCart) {
-            return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
+            return res.status(201).send({ status: true, message: "Success", data: addingCart })
         }
 
         //-------------------let's create a cart  ---------------------------------------------------------//
@@ -140,7 +140,7 @@ const getCart = async function (req, res) {
         if (!checkUser) {
             return res.status(400).send({ status: false, msg: 'user not found' })
         }
-        res.status(200).send({ status: false, data: checkUser })
+        res.status(200).send({ status: true, message:"Success", data: checkUser })
     }
     catch (err) {
         res.status(200).send({ status: true, data: checkUser })
@@ -269,7 +269,7 @@ const cartUpdate = async function (req, res) {
 
 
         let cartupdate = await cartModel.findOneAndUpdate({ _id: cartId }, { $set: filterQuery }, { new: true })
-        res.status(200).send({ status: true, message: "cart updated", data: cartupdate })
+        res.status(200).send({ status: true, message: "Success", data: cartupdate })
 
     } catch (err) {
         res.status(500).send({ status: false, msg: err.message })
@@ -297,7 +297,6 @@ const deleteCart = async function (req, res) {
 
         let cartDeleted = await cartModel.findOneAndUpdate({ userId: user_id }, { $set: { items: [], totalItems: 0, totalPrice: 0 } }, { new: true }).select({ items: 1, totalPrice: 1, totalItems: 1, _id: 0 });
 
-        console.log(cartDeleted)
         res.status(204).send({ status: true, msg: "cart data successfully deleted", data: cartDeleted })
 
     }

@@ -2,6 +2,7 @@ const userModel = require("../models/userModel")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt");
 const validator = require("../middleware/validation")
+const aws = require("../middleware/aws")
 const {uploadFile} = require("../middleware/aws")
 const mongoose = require("mongoose")
 const isValidObjectId = function(objectId) {
@@ -18,11 +19,11 @@ const createUser = async function(req, res) {
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
 
-        if (!(files && files.length > 0)) {
+        if ((files && files.length > 0)) {
 
-            return res.status(400).send({ status:false, message: "No file found" })
+            var profilePicUrl = await aws.uploadFile(files[0]);
         } 
-        let profilePicUrl = await uploadFile(files[0]);
+       
 
         const { fname, lname, email, phone, password } = body
         // body.profileImage= profilePicUrl
@@ -84,8 +85,8 @@ const createUser = async function(req, res) {
 
         //---------------------------------------------- shipping address--------------------------------
 
-        let address = req.body.address
-        // address = JSON.parse(addressData)
+        let addressData = req.body.address
+        address = JSON.parse(addressData)
 
         if (address.shipping) {
             if (address.shipping.street) {
@@ -148,7 +149,7 @@ const createUser = async function(req, res) {
         res.status(201).send({ status: true, msg: "user created successfully", data: userCreated })
 
     } catch (error) {
-        res.status(500).send({ status: false, msg: error.message })
+        res.status(500).send({ status: false, msg: error.message }) 
     }
 }
 
@@ -230,7 +231,7 @@ const getUser = async function(req, res) {
             return res.status(404).send({ status: false, message: "user not found" });
         }
         //return user in response
-        return res.status(200).send({ status: true, data: user });
+        return res.status(200).send({ status: true,message:"Success" ,data: user });
 
 
     } catch (error) {

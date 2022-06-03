@@ -1,6 +1,7 @@
 const cartModel = require('../models/cartModel');
 const userModel = require('../models/userModel');
 const productModel = require('../models/productModel');
+const aws = require("../middleware/aws")
 const orderModel = require('../models/orderModel');
 const validator = require('../middleware/validation')
 const mongoose = require("mongoose")
@@ -72,6 +73,11 @@ const createOrder = async function (req, res) {
         // body["totalQuantity"] = quantityValue
         console.log(body.totalQuantity)
 
+        let quantityValue=0;
+        for(let i= 0;i<checkUserCart.items.length;i++){
+            quantityValue+=checkUserCart.items[i].quantity 
+            body.totalQuantity = quantityValue
+        }
         let createOrder = await orderModel.create(body)
 
         let findCreatedOrder = await orderModel.findById({ _id: createOrder._id }).select({ "__v": 0 })
@@ -131,11 +137,35 @@ const updateOrder= async function(req,res){
             return res.status(200).send({ status: true, message: "Success", data: updateOrderDetail })
         }
 
-        return res.status(400).send({Status: false , message: "You can not cancelled this Item"})
+        let orderPresent = await orderModel.findOne({ _id: orderId, isDeleted: false })
+ 
+        if (!orderPresent) {
+            return res.status(404).send({ status: false, message: "Order not found " })
+        }
+
+        if (!status) {
+            if (!validator.isValid(status)) {
+                return res.status(400).send({ status: false, message: "provide status in request body" })
+            }
+        }
+
+        if (status == "pending") {
+            return res.status(400).send({ status: false, message: "status can not be pending" })
+        }
+        if (status == "cancled") {
+            if (orderPresent.cancellable === false) {
+                return res.status(400).send({ status: false, message: "order Can not be cancelled" })
+            }
+        }
 
 
-    }catch(err){
-        return res.status(500).send({Status: false , message: err.message})
+        let orderStatus = await orderModel.findOneAndUpdate({ _id: orderId }, { $set: requestBody }, { new: true })
+        let cartUpdate = await cartModel.findOneAndUpdate({ userId: userId }, { $set: { items: [], totalPrice: 0, totalItems: 0 } }, { new: true })
+        res.status(200).send({ status: true,message:"Success" ,data: orderStatus })
+    }
+
+    catch (err) {
+        return res.status(500).send({ status: false, msg: err.message })
     }
 }
 

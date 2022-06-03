@@ -15,7 +15,7 @@ const createProduct = async function(req, res) {
 
         let reqBody = req.body
             //req body check
-        if (Object.keys(reqBody).length === 0) {
+        if (Object.keys(reqBody).length === 0 && req.files==undefined) {
 
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
@@ -47,10 +47,20 @@ const createProduct = async function(req, res) {
         }
         //currency must be 'INR'
         if (currencyId !== 'INR') return res.status(400).send({ status: false, msg: "currencyId should be 'INR'" })
+        if("currencyFormat" in reqBody){
+            if (!validator.isValid(currencyFormat)) {
+                return res.status(400).send({ status: false, msg: "currencyFormat is required" })
+            }
+             if(!(currencyFormat== "₹")){
+                return res.status(400).send({ status: false, msg: "currencyFormat is wrong" })
+             }
+             reqBody["currencyFormat"] =currencyFormat
+             
+           }
 
-        if (!validator.isValid(currencyFormat)) {
-            return res.status(400).send({ status: false, msg: "currencyFormat is required" })
-        }
+            let rupeesSymbol="₹"
+            reqBody.currencyFormat = rupeesSymbol
+
         //geting the file 
         let files = req.files
 
@@ -84,7 +94,7 @@ const createProduct = async function(req, res) {
 
             //successfully created product
         let productCreated = await productModel.create(reqBody)
-        res.status(201).send({ status: true, data: productCreated })
+        res.status(201).send({ status: true, message:"Success", data: productCreated })
     } 
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message })
@@ -111,7 +121,7 @@ const getProduct = async function(req, res) {
             return res.status(404).send({ status: false, message: "Product not found" });
         }
         //return product in response==
-        return res.status(200).send({ status: true, data: product });
+        return res.status(200).send({ status: true, message:"Success",data: product });
 
 
     } catch (error) {
@@ -197,7 +207,7 @@ const productByQuery = async function(req, res) {
    console.log(queryParams.price)
         // sort by price in product collection.==========
         const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: priceSort })
-        res.status(200).send({ status: true, data: products });
+        res.status(200).send({ status: true, message:"Success", data: products });
 
 
     } catch (error) {
@@ -272,13 +282,19 @@ const updateProduct = async function(req, res) {
             upData["currencyId"] = currencyId
         }
         
-        if ("currencyFormat" in updates) {
+        if("currencyFormat" in updates){
             if (!validator.isValid(currencyFormat)) {
                 return res.status(400).send({ status: false, msg: "currencyFormat is required" })
             }
-            upData["currencyFormat"] = currencyFormat
-        }
+             if(!(currencyFormat== "₹")){
+                return res.status(400).send({ status: false, msg: "currencyFormat is wrong" })
+             }
+             upData["currencyFormat"] =currencyFormat
+             
+           }
 
+            let rupeesSymbol="₹"
+            upData.currencyFormat = rupeesSymbol
         if ("isFreeShipping" in updates) {
             if (!validator.isValid(isFreeShipping)) {
                 return res.status(400).send({ status: false, msg: "isFreeShipping is required" })
@@ -342,7 +358,7 @@ const updateProduct = async function(req, res) {
 
 
         let productUpdated = await productModel.findOneAndUpdate({ _id: product_id, isDeleted: false }, {$set:upData}, { new: true })
-        res.status(200).send({ status: true, message: "Product updated", date: productUpdated })
+        res.status(200).send({ status: true, message: "Success", date: productUpdated })
 
 
 
