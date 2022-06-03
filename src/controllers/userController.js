@@ -2,7 +2,7 @@ const userModel = require("../models/userModel")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt");
 const validator = require("../middleware/validation")
-const aws = require("../middleware/aws")
+const {uploadFile} = require("../middleware/aws")
 const mongoose = require("mongoose")
 const isValidObjectId = function(objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
@@ -84,8 +84,8 @@ const createUser = async function(req, res) {
 
         //---------------------------------------------- shipping address--------------------------------
 
-        let addressData = req.body.address
-        address = JSON.parse(addressData)
+        let address = req.body.address
+        // address = JSON.parse(addressData)
 
         if (address.shipping) {
             if (address.shipping.street) {
