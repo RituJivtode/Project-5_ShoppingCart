@@ -76,7 +76,7 @@ const createCart = async (req, res) => {
         //-------------------let's create a cart  ---------------------------------------------------------//
 
         let createCart = await cartModel.create(data)
-        return res.status(201).send({ status: true, message: "success", data: createCart })
+        return res.status(201).send({ status: true, message: "Success", data: createCart })
 
         //------------this line is being use to remove _V:0   ---------------------------------------------//
 
