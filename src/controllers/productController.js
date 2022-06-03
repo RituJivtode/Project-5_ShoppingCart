@@ -15,7 +15,7 @@ const createProduct = async function(req, res) {
 
         let reqBody = req.body
             //req body check
-        if (Object.keys(reqBody).length === 0) {
+        if (Object.keys(reqBody).length === 0 && req.files==undefined) {
 
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
@@ -47,10 +47,20 @@ const createProduct = async function(req, res) {
         }
         //currency must be 'INR'
         if (currencyId !== 'INR') return res.status(400).send({ status: false, msg: "currencyId should be 'INR'" })
+        if("currencyFormat" in reqBody){
+            if (!validator.isValid(currencyFormat)) {
+                return res.status(400).send({ status: false, msg: "currencyFormat is required" })
+            }
+             if(!(currencyFormat== "₹")){
+                return res.status(400).send({ status: false, msg: "currencyFormat is wrong" })
+             }
+             reqBody["currencyFormat"] =currencyFormat
+             
+           }
 
-        if (!validator.isValid(currencyFormat)) {
-            return res.status(400).send({ status: false, msg: "currencyFormat is required" })
-        }
+            let rupeesSymbol="₹"
+            reqBody.currencyFormat = rupeesSymbol
+
         //geting the file 
         let files = req.files
 
@@ -271,16 +281,19 @@ const updateProduct = async function(req, res) {
             upData["currencyId"] = currencyId
         }
         
-        if ("currencyFormat" in updates) {
+        if("currencyFormat" in updates){
             if (!validator.isValid(currencyFormat)) {
                 return res.status(400).send({ status: false, msg: "currencyFormat is required" })
             }
+             if(!(currencyFormat== "₹")){
+                return res.status(400).send({ status: false, msg: "currencyFormat is wrong" })
+             }
+             upData["currencyFormat"] =currencyFormat
+             
+           }
 
-       
-            upData["currencyFormat"] = currencyFormat
-        }
-        let a="₹"
-        upData["currencyFormat"] = a
+            let rupeesSymbol="₹"
+            upData.currencyFormat = rupeesSymbol
         if ("isFreeShipping" in updates) {
             if (!validator.isValid(isFreeShipping)) {
                 return res.status(400).send({ status: false, msg: "isFreeShipping is required" })

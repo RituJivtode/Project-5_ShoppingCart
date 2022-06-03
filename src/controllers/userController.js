@@ -230,7 +230,7 @@ const getUser = async function(req, res) {
             return res.status(404).send({ status: false, message: "user not found" });
         }
         //return user in response
-        return res.status(200).send({ status: true, data: user });
+        return res.status(200).send({ status: true,message:"Success" ,data: user });
 
 
     } catch (error) {

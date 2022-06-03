@@ -67,7 +67,7 @@ const createCart = async (req, res) => {
       
         //----------------------------------------------------------------------------------------------------------//
 
-        let addingCart = await cartModel.findOneAndUpdate({ userId: userIdbyParams }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "__v": 0 })
+        let addingCart = await cartModel.findOneAndUpdate({ userId: userIdbyParams }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true })
 
         if (addingCart) {
             return res.status(201).send({ status: true, message: "Success", data: addingCart })
@@ -79,10 +79,6 @@ const createCart = async (req, res) => {
         return res.status(201).send({ status: true, message: "Success", data: createCart })
 
         //------------this line is being use to remove _V:0   ---------------------------------------------//
-
-        // let findData = await cartModel.findOne({ _id: createCart._id }).select({ "__v": 0 })
-
-        // return res.status(201).send({ status: true, message: "cart added", data: findData })
 
     } catch (err) {
         return res.status(500).send({ Status: false, message: err.message })
@@ -263,7 +259,6 @@ const deleteCart = async function (req, res) {
 
         let cartDeleted = await cartModel.findOneAndUpdate({ userId: user_id }, { $set: { items: [], totalItems: 0, totalPrice: 0 } }, { new: true }).select({ items: 1, totalPrice: 1, totalItems: 1, _id: 0 });
 
-        console.log(cartDeleted)
         res.status(204).send({ status: true, msg: "cart data successfully deleted", data: cartDeleted })
 
         // let items = []
