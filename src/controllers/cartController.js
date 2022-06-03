@@ -19,77 +19,78 @@ let removeProductRegex = /^[0-1]{1}$/
 
 
 const createCart = async(req, res) => {
-        try {
+    try {
 
-            const data = req.body
-            const userIdbyParams = req.params.userId
+        const data = req.body
+        const userIdbyParams = req.params.userId
 
-            let { productId, quantity, cartId } = data
+        let { productId, quantity, cartId } = data
 
-            if (Object.keys(data).length === 0) {
-                return res.status(400).send({ status: false, messsage: "Please enter some data" })
-            }
-
-            if (!isValidObjectId(productId)) {
-                return res.status(400).send({ status: false, messsage: "plzz enter valid productId" })
-            }
-
-            const isProductPresent = await productModel.findOne({ _id: productId, isDeleted: false })
-
-            if (!isProductPresent) {
-                return res.status(404).send({ status: false, messsage: `product not found by this prodct id ${productId}` })
-            }
-            if (quantity === "") {
-                return res.status(400).send({ status: false, messsage: "plzz enter valid quatity , please use digit" })
-            }
-            if (!quantity) {
-                quantity = 1
-            }
-            if (quantity) {
-                if (!digitRegex.test(quantity)) {
-                    return res.status(400).send({ status: false, messsage: "plzz enter valid quatity" })
-                }
-            }
-
-
-            if (typeof quantity === "string") {
-                return res.status(400).send({ status: false, messsage: "plzz enter quantity in Number not as an including string" })
-            }
-
-            data.userId = userIdbyParams
-
-            data.items = [{ productId: isProductPresent._id, quantity: quantity }]
-
-            data.totalPrice = (isProductPresent.price) * quantity
-
-            data.totalItems = data.items.length
-
-
-            //----------------------------------------------------------------------------------------------------------//
-
-            let addingCart = await cartModel.findOneAndUpdate({ userId: userIdbyParams }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "__v": 0 })
-            if (addingCart) {
-                return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
-            }
-
-
-            //-------------------let's create a cart  ---------------------------------------------------------//
-
-            let cartCreated = await cartModel.create(data)
-            return res.status(201).send({ status: true, message: "cart  created successfullly", data: cartCreated })
-
-            //------------this line is being use to remove _V:0   ---------------------------------------------//
-
-            // let findData = await cartModel.findOne({ _id: createCart._id }).select({ "__v": 0 })
-
-            // return res.status(201).send({ status: true, message: "cart added", data: findData })
-
-        } catch (err) {
-            return res.status(500).send({ Status: false, message: err.message })
+        if (Object.keys(data).length === 0) {
+            return res.status(400).send({ status: false, messsage: "Please enter some data" })
         }
 
+        if (!isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, messsage: "plzz enter valid productId" })
+        }
+
+        const isProductPresent = await productModel.findOne({ _id: productId, isDeleted: false })
+
+        if (!isProductPresent) {
+            return res.status(404).send({ status: false, messsage: `product not found by this prodct id ${productId}` })
+        }
+        if (quantity === "") {
+            return res.status(400).send({ status: false, messsage: "plzz enter valid quatity , please use digit" })
+        }
+        if (!quantity) {
+            quantity = 1
+        }
+        if (quantity) {
+            if (!digitRegex.test(quantity)) {
+                return res.status(400).send({ status: false, messsage: "plzz enter valid quatity" })
+            }
+        }
+
+
+        if (typeof quantity === "string") {
+            return res.status(400).send({ status: false, messsage: "plzz enter quantity in Number not as an including string" })
+        }
+
+        data.userId = userIdbyParams
+
+        data.items = [{ productId: isProductPresent._id, quantity: quantity }]
+
+        data.totalPrice = (isProductPresent.price) * quantity
+
+        data.totalItems = data.items.length
+
+
+        //----------------------------------------------------------------------------------------------------------//
+
+        let addingCart = await cartModel.findOneAndUpdate({ userId: userIdbyParams }, { $push: { items: data.items }, $inc: { totalPrice: data.totalPrice, totalItems: data.totalItems } }, { new: true }).select({ "__v": 0 })
+        if (addingCart) {
+            return res.status(201).send({ status: true, message: "one more item added succefully", data: addingCart })
+        }
+
+
+        //-------------------let's create a cart  ---------------------------------------------------------//
+
+        let cartCreated = await cartModel.create(data)
+        return res.status(201).send({ status: true, message: "cart  created successfullly", data: cartCreated })
+
+        //------------this line is being use to remove _V:0   ---------------------------------------------//
+
+        // let findData = await cartModel.findOne({ _id: createCart._id }).select({ "__v": 0 })
+
+        // return res.status(201).send({ status: true, message: "cart added", data: findData })
+
+    } catch (err) {
+        return res.status(500).send({ Status: false, message: err.message })
     }
-    //========================================================get cart======================***
+
+}
+
+//========================================================get cart======================***
 
 const getCart = async function(req, res) {
     try {
@@ -103,7 +104,7 @@ const getCart = async function(req, res) {
         if (!checkUser) {
             return res.status(400).send({ status: false, msg: 'user not found' })
         }
-        res.status(200).send({ status: false, data: checkUser })
+        res.status(200).send({ status: true, message: "Success", data: checkUser })
     } catch (err) {
         res.status(200).send({ status: true, data: checkUser })
     }
@@ -233,7 +234,7 @@ const cartUpdate = async function(req, res) {
 
 
         let cartupdate = await cartModel.findOneAndUpdate({ _id: cartId }, { $set: filterQuery }, { new: true })
-        res.status(200).send({ status: true, message: "cart updated", data: cartupdate })
+        res.status(200).send({ status: true, message: "Success", data: cartupdate })
 
     } catch (err) {
         res.status(500).send({ status: false, msg: err.message })

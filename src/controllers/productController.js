@@ -84,7 +84,7 @@ const createProduct = async function(req, res) {
 
         //successfully created product
         let productCreated = await productModel.create(reqBody)
-        res.status(201).send({ status: true, data: productCreated })
+        res.status(201).send({ status: true, message: "Success", data: productCreated })
     } catch (err) {
         return res.status(500).send({ status: false, msg: err.message })
     }
@@ -110,7 +110,7 @@ const getProduct = async function(req, res) {
             return res.status(404).send({ status: false, message: "Product not found" });
         }
         //return product in response==
-        return res.status(200).send({ status: true, data: product });
+        return res.status(200).send({ status: true, message: "Success", data: product });
 
 
     } catch (error) {
@@ -130,7 +130,7 @@ const productByQuery = async function(req, res) {
         queryParams = {};
         if ("size" in req.query) {
 
-             
+
             //$addtoset
             let array = availableSizes.split(",").map(x => x.trim())
                 // console.log(array)
@@ -214,7 +214,9 @@ const productByQuery = async function(req, res) {
 
         }
         const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: priceSort })
-        res.status(200).send({ status: true, data: products });
+        res.status(200).send({ status: true, message: "Success", data: products });
+
+
     } catch (error) {
         res.status(500).send({ status: false, msg: error.message })
     }
@@ -290,9 +292,12 @@ const updateProduct = async function(req, res) {
             if (!validator.isValid(currencyFormat)) {
                 return res.status(400).send({ status: false, msg: "currencyFormat is required" })
             }
+
+
             upData["currencyFormat"] = currencyFormat
         }
-
+        let a = "₹"
+        upData["currencyFormat"] = a
         if ("isFreeShipping" in updates) {
             if (!validator.isValid(isFreeShipping)) {
                 return res.status(400).send({ status: false, msg: "isFreeShipping is required" })
@@ -358,7 +363,7 @@ const updateProduct = async function(req, res) {
 
 
         let productUpdated = await productModel.findOneAndUpdate({ _id: product_id, isDeleted: false }, { $set: upData }, { new: true })
-        res.status(200).send({ status: true, message: "Product updated", date: productUpdated })
+        res.status(200).send({ status: true, message: "Success", date: productUpdated })
 
 
 

@@ -17,7 +17,6 @@ router.get("/user/:userId/profile", mid.authentication, userController.getUser)
 
 router.put("/user/:userId/profile", mid.authentication, mid.authorization, userController.updateUser)
 
-router.put("/user/:userId/profile", userController.updateUser)
 
 //==============================================product====================================
 router.get("/products", productController.productByQuery)
@@ -34,8 +33,7 @@ router.delete("/products/:productId", productController.deleteProduct)
 
 router.post("/users/:userId/cart", mid.authentication, mid.authorization, cartController.createCart)
 
-router.get("/users/:userId/cart", mid.authentication, cartController.getCart)
-router.put("/users/:userId/cart", cartController.cartUpdate)
+router.get("/users/:userId/cart", mid.authentication, mid.authorization, cartController.getCart)
 
 router.put("/users/:userId/cart", mid.authentication, mid.authorization, cartController.cartUpdate)
 
@@ -43,8 +41,8 @@ router.delete("/users/:userId/cart", mid.authentication, mid.authorization, cart
 
 //===========================================order========================================
 
-router.post("/users/:userId/orders", orderController.createOrder)
-router.put("/users/:userId/orders", orderController.updateOrder)
+router.post("/users/:userId/orders", mid.authentication, mid.authorization, orderController.createOrder)
+router.put("/users/:userId/orders", mid.authentication, mid.authorization, orderController.updateOrder)
 
 
 module.exports = router;

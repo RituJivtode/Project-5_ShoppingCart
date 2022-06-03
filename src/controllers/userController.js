@@ -18,11 +18,11 @@ const createUser = async function(req, res) {
             return res.status(400).send({ Status: false, message: " Sorry Body can't be empty" })
         }
 
-        if (!(files && files.length > 0)) {
+        if ((files && files.length > 0)) {
 
-            return res.status(400).send({ status: false, message: "No file found" })
+            var profilePicUrl = await aws.uploadFile(files[0]);
         }
-        let profilePicUrl = await uploadFile(files[0]);
+
 
         const { fname, lname, email, phone, password } = body
         // body.profileImage= profilePicUrl
