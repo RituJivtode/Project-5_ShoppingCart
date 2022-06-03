@@ -279,6 +279,9 @@ const updateProduct = async function(req, res) {
             if (!validator.isValid(currencyId)) {
                 return res.status(400).send({ status: false, msg: "currencyId is required" })
             }
+            if (currencyId != "INR") {
+                return res.status(400).send({ status: false, message: "currencyId should be INR" })
+            }
             upData["currencyId"] = currencyId
         }
         
@@ -298,6 +301,10 @@ const updateProduct = async function(req, res) {
         if ("isFreeShipping" in updates) {
             if (!validator.isValid(isFreeShipping)) {
                 return res.status(400).send({ status: false, msg: "isFreeShipping is required" })
+            }
+
+            if (!["true", "false"].includes(isFreeShipping)) {
+                return res.status(400).send({ status: false, message: "isFreeShipping must be a boolean value" })
             }
             upData["isFreeShipping"] = isFreeShipping
         }
