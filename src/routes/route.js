@@ -17,7 +17,6 @@ router.get("/user/:userId/profile", mid.authentication, userController.getUser)
 
 router.put("/user/:userId/profile", mid.authentication, mid.authorization, userController.updateUser)
 
-
 //==============================================product====================================
 router.get("/products", productController.productByQuery)
 

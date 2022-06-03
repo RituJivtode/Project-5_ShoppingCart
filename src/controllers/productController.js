@@ -130,7 +130,7 @@ const getProduct = async function(req, res) {
 
 }
 
-//=============================================================================================================
+//==================================================== GET productByQuery =========================================================
 
 const productByQuery = async function(req, res) {
     try {
@@ -217,6 +217,7 @@ const productByQuery = async function(req, res) {
 }
 
 // ==============================================================================================================
+
 const updateProduct = async function(req, res) {
     try {
 
@@ -341,21 +342,19 @@ const updateProduct = async function(req, res) {
 
 
         let files = req.files
-        if (Object.keys(req.body).length === 0) {
+        if (Object.keys(req.body).length == 0) {
             if (req.files.length == 0 && req.files != undefined) {
                 return res.status(400).send({ status: false, msg: "Please select file" })
             }
         }
-        if (req.files.length > 0) {
-            if (!(files && files.length > 0)) {
-                return res.status(400).send({ msg: "No files found" })
-
-            } else {
+           
+        if (files && files.length !== 0) {
+               
                 var updateImage = await aws.uploadFile(files[0])
             }
 
             upData.productImage = updateImage
-        }
+        
 
 
         let productUpdated = await productModel.findOneAndUpdate({ _id: product_id, isDeleted: false }, {$set:upData}, { new: true })
