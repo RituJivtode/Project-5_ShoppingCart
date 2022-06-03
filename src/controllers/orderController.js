@@ -36,13 +36,13 @@ const createOrder = async function (req, res) {
             return res.status(404).send({ status: false, msg: "cart does not belong to that user" })
         }
 
-        if (cancellable) {
+        if ("cancellable" in body) {
             if (typeof cancellable != "boolean") {
                 return res.status(400).send({ status: false, message: 'Cancellable must be boolean' });
             }
         }
 
-        if (status) {
+        if ("status" in body) {
             if (!validator.isValidStatus(status)) {
                 return res.status(400).send({ status: false, message: `Status must be among ['pending','completed','cancelled'].` });
             }
@@ -135,7 +135,13 @@ const updateOrder = async function (req, res) {
                 return res.status(400).send({ status: false, message: "order Can not be cancelled" })
             }
         }
+if("status" in requestBody){
+if(!(status=="completed" || status=="cancled")){ 
+    return res.status(400).send({ status: false, message: "wrong input" })
 
+}
+
+}
 
         let orderStatus = await orderModel.findOneAndUpdate({ _id: orderId }, { $set: requestBody }, { new: true })
         let cartUpdate = await cartModel.findOneAndUpdate({ userId: userId }, { $set: { items: [], totalPrice: 0, totalItems: 0 } }, { new: true })
