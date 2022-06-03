@@ -85,8 +85,13 @@ const createUser = async function(req, res) {
 
         //---------------------------------------------- shipping address--------------------------------
 
-        let addressData = req.body.address
-        address = JSON.parse(addressData)
+        let address = req.body.address
+
+        if (!address || Object.keys(address).length === 0) {
+            return res.status(400).send({ status: false, message: "Please enter address and it should be in object!!" })
+        }
+        address = JSON.parse(address)
+       
 
         if (address.shipping) {
             if (address.shipping.street) {
