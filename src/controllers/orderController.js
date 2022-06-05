@@ -1,7 +1,4 @@
 const cartModel = require('../models/cartModel');
-const userModel = require('../models/userModel');
-const productModel = require('../models/productModel');
-const aws = require("../middleware/aws")
 const orderModel = require('../models/orderModel');
 const validator = require('../middleware/validation')
 const mongoose = require("mongoose")
@@ -78,21 +75,19 @@ const createOrder = async function(req, res) {
 }
 
 //============================================================ update ==================================================
-
 const updateOrder = async function(req, res) {
     try {
+        let requestBody = req.body
+        let userId = req.params.userId
+        let { orderId, status } = requestBody
 
-        let body = req.body
-        let userId = req.param.userId
-        let { orderId, status } = body
-
-        if (Object.keys(body).length === 0) {
+        if (Object.keys(requestBody).length === 0) {
             return res.status(400).send({ Status: false, message: "Please provide data" })
         }
 
-        if (!validator.isValid(orderId)) {
-            return res.status(400).send({ Status: false, message: "Please provide orderId" })
-        }
+        // if(!orderId || orderId == ""){
+        //     return res.status(400).send({Status: false , message: "Please provide orderId"})
+        // }
         if (!isValidObjectId(orderId)) {
             return res.status(400).send({ Status: false, message: "Please provide valid orderId" })
         }
@@ -114,15 +109,15 @@ const updateOrder = async function(req, res) {
             return res.status(400).send({ Status: false, message: "Your order has been cancelled" })
         }
 
-        if (checkOrder.cancellable == true) {
-            let updateOrderDetail = await orderModel.findOneAndUpdate({ _id: orderId, isDeleted: false }, { status: "cancelled", isDeleted: true, deletedAt: Date.now() }, { new: true }).select({ "__v": 0 })
+        // if(checkOrder.cancellable == true){
+        //     let updateOrderDetail= await orderModel.findOneAndUpdate({_id:orderId,isDeleted:false},{status:"cancelled",isDeleted:true,deletedAt: Date.now()},{new:true}).select({ "__v": 0})
 
-            if (!updateOrderDetail) {
-                return res.status(400).send({ Status: false, message: "Sorry it can not be cancelled" })
-            }
+        //     if(!updateOrderDetail){
+        //         return res.status(400).send({Status: false , message: "Sorry it can not be cancelled"})   
+        //     }
 
-            return res.status(200).send({ status: true, message: "Success", data: updateOrderDetail })
-        }
+        //     return res.status(200).send({ status: true, message: "Success", data: updateOrderDetail })
+        // }
 
         let orderPresent = await orderModel.findOne({ _id: orderId, isDeleted: false })
 
@@ -139,13 +134,13 @@ const updateOrder = async function(req, res) {
         if (status == "pending") {
             return res.status(400).send({ status: false, message: "status can not be pending" })
         }
-        if (status == "cancled") {
+        if (status == "cancelled") {
             if (orderPresent.cancellable === false) {
                 return res.status(400).send({ status: false, message: "order Can not be cancelled" })
             }
         }
         if ("status" in requestBody) {
-            if (!(status == "completed" || status == "cancled")) {
+            if (!(status == "completed" || status == "cancelled")) {
                 return res.status(400).send({ status: false, message: "wrong input" })
 
             }
@@ -155,6 +150,7 @@ const updateOrder = async function(req, res) {
         let orderStatus = await orderModel.findOneAndUpdate({ _id: orderId }, { $set: requestBody }, { new: true })
         let cartUpdate = await cartModel.findOneAndUpdate({ userId: userId }, { $set: { items: [], totalPrice: 0, totalItems: 0 } }, { new: true })
         res.status(200).send({ status: true, message: "Success", data: orderStatus })
+
     } catch (err) {
         return res.status(500).send({ status: false, msg: err.message })
     }

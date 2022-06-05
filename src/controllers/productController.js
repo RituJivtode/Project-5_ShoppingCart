@@ -142,90 +142,89 @@ const productByQuery = async function(req, res) {
 
 
             //$addtoset
-            let array = availableSizes.split(",").map(x => x.trim())
+            let array = size.split(",").map(x => x.trim())
                 // console.log(array)
             for (let i = 0; i < array.length; i++) {
                 if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(array[i]))) {
                     return res.status(400).send({ status: false, message: `Available Sizes must be among ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
                 }
+
+                queryParams["availableSizes"] = { $regex: size }
+            }
+            if ("name" in req.query) {
+
+                if (!validator.isValid(name)) {
+                    return res.status(400).send({ status: false, message: "name is required" })
+                }
+                queryParams["title"] = { $regex: name }
+
+
             }
 
-            queryParams["availableSizes"] = { $regex: size }
-        }
-        if ("name" in req.query) {
+            if ("priceGreaterThan" in req.query || "priceLessThan" in req.query) {
+                if (priceGreaterThan <= 0 || priceLessThan <= 0) {
+                    return res.status(400).send({ status: false, message: `Price should be a valid number` })
+                }
+                if ("priceGreaterThan" in req.query && "priceLessThan" in req.query) {
+                    queryParams.price = {
+                        $gt: priceGreaterThan,
+                        $lt: priceLessThan
 
-            if (!validator.isValid(name)) {
-                return res.status(400).send({ status: false, message: "name is required" })
+                    }
+
+                }
             }
-            queryParams["title"] = { $regex: name }
+            if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
+                if ("priceGreaterThan" in req.query) {
+                    queryParams.price = {
+                        $gt: priceGreaterThan,
+                    }
 
-
-        }
-
-        if ("priceGreaterThan" in req.query || "priceLessThan" in req.query) {
-            if (priceGreaterThan <= 0 || priceLessThan <= 0) {
-                return res.status(400).send({ status: false, message: `Price should be a valid number` })
+                }
             }
-            if ("priceGreaterThan" in req.query && "priceLessThan" in req.query) {
-                queryParams.price = {
-                    $gt: priceGreaterThan,
-                    $lt: priceLessThan
-
+            if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
+                if ("priceLessThan" in req.query) {
+                    queryParams.price = {
+                        $lt: priceLessThan
+                    }
                 }
 
             }
-        }
-        if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
-            if ("priceGreaterThan" in req.query) {
-                queryParams.price = {
-                    $gt: priceGreaterThan,
+
+
+
+            if ("priceSort" in req.query) {
+
+                if (!validator.isValid(priceSort)) {
+                    return res.status(400).send({ status: false, message: "please provide input" })
                 }
 
             }
-        }
-        if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
-            if ("priceLessThan" in req.query) {
-                queryParams.price = {
-                    $lt: priceLessThan
+
+            if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
+                if ("priceLessThan" in req.query) {
+                    queryParams.price = {
+                        $lt: priceLessThan
+                    }
                 }
             }
 
-        }
 
 
+            if ("priceSort" in req.query) {
 
-        if ("priceSort" in req.query) {
-
-            if (!validator.isValid(priceSort)) {
-                return res.status(400).send({ status: false, message: "please provide input" })
-            }
-
-        }
-
-        if (!("priceGreaterThan" in req.query && "priceLessThan" in req.query)) {
-            if ("priceLessThan" in req.query) {
-                queryParams.price = {
-                    $lt: priceLessThan
+                if (!validator.isValid(priceSort)) {
+                    return res.status(400).send({ status: false, message: "please provide input" })
                 }
+
+                console.log(queryParams.price)
+                    // sort by price in product collection.==========
+
+
             }
+            const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: priceSort })
+            res.status(200).send({ status: true, message: "Success", data: products });
         }
-
-
-
-        if ("priceSort" in req.query) {
-
-            if (!validator.isValid(priceSort)) {
-                return res.status(400).send({ status: false, message: "please provide input" })
-            }
-
-            console.log(queryParams.price)
-                // sort by price in product collection.==========
-
-
-        }
-        const products = await productModel.find({ $and: [queryParams, { isDeleted: false }] }).sort({ price: priceSort })
-        res.status(200).send({ status: true, message: "Success", data: products });
-
 
     } catch (error) {
         res.status(500).send({ status: false, msg: error.message })
